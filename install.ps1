@@ -6,7 +6,7 @@ param(
     [switch]$VerboseLog,
     [switch]$Gui,
     [switch]$CreateShortcut,
-    [string]$ReleaseUrl = 'https://github.com/mson-ssh/check-banquyen/releases/latest/download/check-license.zip'
+    [string]$ReleaseUrl = 'https://github.com/mson-ssh/check-banquyen/archive/refs/heads/main.zip'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -42,8 +42,11 @@ try {
 
     $main = Join-Path $installRoot 'src\main.ps1'
     if (-not (Test-Path -LiteralPath $main -PathType Leaf)) {
-        $nested = Get-ChildItem -Path $installRoot -Filter main.ps1 -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
-        if ($nested) { $main = $nested.FullName }
+        $nested = Get-ChildItem -Path $installRoot -Filter main.ps1 -Recurse -ErrorAction SilentlyContinue | Where-Object { $_.FullName -like '*\src\main.ps1' } | Select-Object -First 1
+        if ($nested) {
+            $main = $nested.FullName
+            $installRoot = Split-Path -Parent (Split-Path -Parent $main)
+        }
     }
 
     if (-not (Test-Path -LiteralPath $main -PathType Leaf)) {
