@@ -41,15 +41,14 @@ Công cụ chỉ đọc dữ liệu từ các nguồn hệ thống và nguồn b
 
 Các nhóm dấu hiệu được nhận diện gồm KMS emulator/client, MAS/HWID/Ohook/TSforge/KMS38, `SppExtComObjHook.dll` và các tên/đường dẫn phổ biến của công cụ kích hoạt không chính thống.
 
-## Tham số dòng lệnh
+## Tham số nâng cao
 
 - `-Gui`: mở giao diện WPF.
-- `-Menu`: mở menu tương tác trên console.
-- `-Json`: in kết quả JSON ra console.
+- `-Json`: in kết quả JSON ra PowerShell, dành cho kỹ thuật viên cần tự động hóa.
 - `-NoReport`: không ghi file JSON/CSV.
 - `-VerboseLog`: bật log chi tiết.
 - `-ApplyCleanup`: tạo kế hoạch gỡ và áp dụng khi dùng kèm `-Force`.
-- `-Force`: xác nhận áp dụng cleanup trong chế độ dòng lệnh.
+- `-Force`: xác nhận áp dụng cleanup trong PowerShell nâng quyền.
 
 ## Lưu ý an toàn
 

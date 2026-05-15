@@ -3,7 +3,6 @@ param(
     [switch]$Json,
     [switch]$NoReport,
     [switch]$VerboseLog,
-    [switch]$Menu,
     [switch]$Gui,
     [switch]$ApplyCleanup,
     [switch]$Force
@@ -58,28 +57,6 @@ function Invoke-CLScan {
     $result
 }
 
-function Write-CLHeader {
-    Clear-Host
-    $isAdmin = Test-CLAdmin
-    Write-Host ''
-    Write-Host '  Check License' -ForegroundColor Cyan
-    Write-Host '  Windows & Office compliance scanner' -ForegroundColor DarkCyan
-    Write-Host "  Administrator: $isAdmin | No activation | No internet upload" -ForegroundColor $(if ($isAdmin) { 'Green' } else { 'Yellow' })
-    Write-Host '  --------------------------------------------------------------' -ForegroundColor DarkGray
-}
-
-function Write-CLMenu {
-    Write-Host ''
-    Write-Host '  Chon tac vu' -ForegroundColor White
-    Write-Host '  [1] Scan nhanh va xem tom tat' -ForegroundColor Green
-    Write-Host '  [2] Scan day du va luu JSON/CSV report' -ForegroundColor Green
-    Write-Host '  [3] Xuat ket qua JSON ra man hinh' -ForegroundColor Yellow
-    Write-Host '  [4] Xem report gan nhat' -ForegroundColor Cyan
-    Write-Host '  [5] Mo thu muc report' -ForegroundColor Cyan
-    Write-Host '  [0] Thoat' -ForegroundColor DarkGray
-    Write-Host ''
-}
-
 function Write-CLSummary {
     param([Parameter(Mandatory)] [object]$Result)
 
@@ -123,83 +100,14 @@ function Write-CLSummary {
     }
 }
 
-function Show-CLLatestReport {
-    if (-not (Test-Path -LiteralPath $reportRoot)) {
-        Write-Host '  Chua co thu muc report.' -ForegroundColor Yellow
-        return
-    }
-
-    $latest = Get-ChildItem -LiteralPath $reportRoot -Filter 'check-license-*.json' -ErrorAction SilentlyContinue |
-    Sort-Object LastWriteTime -Descending |
-    Select-Object -First 1
-
-    if (-not $latest) {
-        Write-Host '  Chua co file JSON report.' -ForegroundColor Yellow
-        return
-    }
-
-    Write-Host "  Report gan nhat: $($latest.FullName)" -ForegroundColor Cyan
-    Get-Content -LiteralPath $latest.FullName -Raw
-}
-
-function Open-CLReportFolder {
-    New-Item -ItemType Directory -Force -Path $reportRoot | Out-Null
-    Invoke-Item -LiteralPath $reportRoot
-}
-
-function Start-CLMenu {
-    param([Parameter(Mandatory)] [object]$Rules)
-
-    do {
-        Write-CLHeader
-        Write-CLMenu
-        $choice = Read-Host '  Nhap lua chon'
-
-        switch ($choice) {
-            '1' {
-                Write-Host '  Dang scan nhanh...' -ForegroundColor DarkCyan
-                $result = Invoke-CLScan -Rules $Rules -NoReport
-                Write-CLSummary -Result $result
-                Read-Host '  Nhan Enter de quay lai menu' | Out-Null
-            }
-            '2' {
-                Write-Host '  Dang scan day du va tao report...' -ForegroundColor DarkCyan
-                $result = Invoke-CLScan -Rules $Rules
-                Write-CLSummary -Result $result
-                Read-Host '  Nhan Enter de quay lai menu' | Out-Null
-            }
-            '3' {
-                $result = Invoke-CLScan -Rules $Rules -NoReport
-                $result | ConvertTo-Json -Depth 8
-                Read-Host '  Nhan Enter de quay lai menu' | Out-Null
-            }
-            '4' {
-                Show-CLLatestReport
-                Read-Host '  Nhan Enter de quay lai menu' | Out-Null
-            }
-            '5' { Open-CLReportFolder }
-            '0' { return }
-            default {
-                Write-Host '  Lua chon khong hop le.' -ForegroundColor Yellow
-                Start-Sleep -Seconds 1
-            }
-        }
-    } while ($true)
-}
-
 try {
-    if ($Gui) {
+    if ($Gui -or (-not $Json -and -not $ApplyCleanup)) {
         & powershell.exe -NoProfile -STA -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'gui.ps1')
         exit $LASTEXITCODE
     }
 
     Import-CLModules
     $rules = Get-Content -LiteralPath $rulesPath -Raw -ErrorAction Stop | ConvertFrom-Json
-
-    if ($Menu -or (-not $Json -and -not $NoReport -and $Host.Name -match 'ConsoleHost')) {
-        Start-CLMenu -Rules $rules
-        return
-    }
 
     $result = Invoke-CLScan -Rules $rules -NoReport:$NoReport
 

@@ -4,7 +4,6 @@ param(
     [switch]$NoReport,
     [switch]$KeepFiles,
     [switch]$VerboseLog,
-    [switch]$Menu,
     [switch]$CreateShortcut,
     [string]$ReleaseUrl = 'https://github.com/mson-ssh/check-banquyen/archive/refs/heads/main.zip'
 )
@@ -79,17 +78,8 @@ try {
         Write-Host "Shortcut created: $shortcutPath"
     }
 
-    if (-not $Menu -and -not $Json) {
-        Start-CLInstalledTool -MainPath $main -RunGui $true -RunJson $false -SkipReport $NoReport -UseVerbose $VerboseLog
-        Write-Host 'Check License GUI is starting...'
-    }
-    else {
-        $scriptParams = @{}
-        if ($Json) { $scriptParams.Json = $true }
-        if ($NoReport) { $scriptParams.NoReport = $true }
-        if ($VerboseLog) { $scriptParams.VerboseLog = $true }
-        & $main @scriptParams
-    }
+    Start-CLInstalledTool -MainPath $main -RunGui $true -RunJson $false -SkipReport $NoReport -UseVerbose $VerboseLog
+    Write-Host 'Check License GUI is starting...'
 }
 catch {
     Write-Error "Install or scan failed: $($_.Exception.Message)"
