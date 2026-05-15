@@ -4,7 +4,7 @@ param(
     [switch]$NoReport,
     [switch]$KeepFiles,
     [switch]$VerboseLog,
-    [switch]$Gui,
+    [switch]$Menu,
     [switch]$CreateShortcut,
     [string]$ReleaseUrl = 'https://github.com/mson-ssh/check-banquyen/archive/refs/heads/main.zip'
 )
@@ -79,7 +79,7 @@ try {
         Write-Host "Shortcut created: $shortcutPath"
     }
 
-    if ($Gui) {
+    if (-not $Menu -and -not $Json) {
         Start-CLInstalledTool -MainPath $main -RunGui $true -RunJson $false -SkipReport $NoReport -UseVerbose $VerboseLog
         Write-Host 'Check License GUI is starting...'
     }

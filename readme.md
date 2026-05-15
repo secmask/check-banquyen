@@ -2,7 +2,7 @@
 
 ## QuickStart
 
-Mở PowerShell và chạy lệnh sau để tải công cụ, cài tạm vào `%TEMP%` và mở menu dòng lệnh:
+Mở PowerShell và chạy lệnh sau để tải công cụ, cài tạm vào `%TEMP%` và mở giao diện kiểm tra bản quyền:
 
 ```powershell
 irm https://raw.githubusercontent.com/mson-ssh/check-banquyen/main/install.ps1 | iex
