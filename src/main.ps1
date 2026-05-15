@@ -11,7 +11,6 @@ param(
 $ErrorActionPreference = 'Continue'
 $moduleRoot = Join-Path $PSScriptRoot 'modules'
 $rulesPath = Join-Path $PSScriptRoot 'config\rules.json'
-$reportRoot = Join-Path $env:ProgramData 'CheckLicense\reports'
 
 if ($VerboseLog) { $VerbosePreference = 'Continue' }
 
@@ -96,7 +95,6 @@ function Write-CLSummary {
     if ($Result.Report) {
         Write-Host ''
         Write-Host "  JSON: $($Result.Report.JsonPath)" -ForegroundColor DarkCyan
-        Write-Host "  CSV : $($Result.Report.CsvPath)" -ForegroundColor DarkCyan
     }
 }
 
