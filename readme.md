@@ -2,28 +2,10 @@
 
 ## QuickStart
 
-Chạy giao diện kiểm tra nhanh:
+Mở PowerShell và chạy lệnh sau để tải công cụ, cài tạm vào `%TEMP%` và mở menu dòng lệnh:
 
 ```powershell
-powershell.exe -NoProfile -STA -ExecutionPolicy Bypass -File .\src\main.ps1 -Gui
-```
-
-Chạy menu dòng lệnh:
-
-```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\src\main.ps1
-```
-
-Xuất kết quả JSON ra màn hình, không tạo report:
-
-```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\src\main.ps1 -Json -NoReport
-```
-
-Build gói phát hành:
-
-```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\tools\build-release.ps1
+irm https://raw.githubusercontent.com/mson-ssh/check-banquyen/main/install.ps1 | iex
 ```
 
 ## Giới thiệu dự án

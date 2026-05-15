@@ -4,9 +4,9 @@ param(
     [switch]$NoReport,
     [switch]$KeepFiles,
     [switch]$VerboseLog,
-    [switch]$Gui = $true,
+    [switch]$Gui,
     [switch]$CreateShortcut,
-    [string]$ReleaseUrl = 'https://github.com/YOUR_USER/check-license/releases/latest/download/check-license.zip'
+    [string]$ReleaseUrl = 'https://github.com/mson-ssh/check-banquyen/releases/latest/download/check-license.zip'
 )
 
 $ErrorActionPreference = 'Stop'
