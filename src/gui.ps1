@@ -402,6 +402,106 @@ function Add-CLLog {
     }
 }
 
+function Add-CLSection {
+    param(
+        [Parameter(Mandatory)] [System.Collections.Generic.List[string]]$Lines,
+        [Parameter(Mandatory)] [string]$Title
+    )
+
+    if ($Lines.Count -gt 0) { $Lines.Add('') }
+    $Lines.Add($Title)
+    $Lines.Add(('-' * $Title.Length))
+}
+
+function Format-CLValue {
+    param([object]$Value, [string]$Fallback = 'N/A')
+    if ($null -eq $Value -or [string]::IsNullOrWhiteSpace([string]$Value)) { return $Fallback }
+    [string]$Value
+}
+
+function Add-CLKeyValue {
+    param(
+        [Parameter(Mandatory)] [System.Collections.Generic.List[string]]$Lines,
+        [Parameter(Mandatory)] [string]$Label,
+        [object]$Value
+    )
+
+    $Lines.Add(('{0,-18}: {1}' -f $Label, (Format-CLValue $Value)))
+}
+
+function Set-CLDetailView {
+    param([Parameter(Mandatory)] [object]$Result)
+
+    $lines = New-Object System.Collections.Generic.List[string]
+    Add-CLSection -Lines $lines -Title 'Tong quan'
+    Add-CLKeyValue -Lines $lines -Label 'May tinh' -Value $Result.Compatibility.ComputerName
+    Add-CLKeyValue -Lines $lines -Label 'He dieu hanh' -Value (('{0} build {1}' -f $Result.Compatibility.OSName, $Result.Compatibility.BuildNumber).Trim())
+    Add-CLKeyValue -Lines $lines -Label 'Ho tro' -Value $Result.Compatibility.IsSupported
+    Add-CLKeyValue -Lines $lines -Label 'Rui ro' -Value (('{0} / {1} / score {2}' -f $Result.Risk.Level, $Result.Risk.Category, $Result.Risk.Score).Trim())
+
+    Add-CLSection -Lines $lines -Title 'Windows'
+    $windows = @($Result.WindowsLicenses)
+    if ($windows.Count -eq 0) { $lines.Add('Khong tim thay thong tin ban quyen Windows.') }
+    foreach ($item in $windows) {
+        Add-CLKeyValue -Lines $lines -Label 'Trang thai' -Value $item.LicenseStatusText
+        Add-CLKeyValue -Lines $lines -Label 'San pham' -Value $item.ProductName
+        Add-CLKeyValue -Lines $lines -Label 'Mo ta' -Value $item.Description
+        Add-CLKeyValue -Lines $lines -Label 'Partial key' -Value $item.PartialProductKey
+        if ($windows.Count -gt 1) { $lines.Add('') }
+    }
+
+    Add-CLSection -Lines $lines -Title 'Office'
+    $office = @($Result.OfficeLicenses)
+    if ($office.Count -eq 0) { $lines.Add('Khong tim thay thong tin ban quyen Office.') }
+    foreach ($item in $office) {
+        Add-CLKeyValue -Lines $lines -Label 'Trang thai' -Value $item.LicenseStatusText
+        Add-CLKeyValue -Lines $lines -Label 'San pham' -Value $item.ProductName
+        Add-CLKeyValue -Lines $lines -Label 'Nguon' -Value $item.Source
+        Add-CLKeyValue -Lines $lines -Label 'Partial key' -Value $item.PartialProductKey
+        if ($office.Count -gt 1) { $lines.Add('') }
+    }
+
+    Add-CLSection -Lines $lines -Title 'KMS'
+    $kms = @($Result.KmsInfo | Where-Object { $_.IsConfigured -or $_.IsSuspicious })
+    if ($kms.Count -eq 0) { $lines.Add('Khong phat hien cau hinh KMS dang chu y.') }
+    foreach ($item in $kms) {
+        Add-CLKeyValue -Lines $lines -Label 'Loai' -Value $item.Scope
+        Add-CLKeyValue -Lines $lines -Label 'May chu' -Value $item.KeyManagementServiceName
+        Add-CLKeyValue -Lines $lines -Label 'Cong' -Value $item.KeyManagementServicePort
+        Add-CLKeyValue -Lines $lines -Label 'Dang ngo' -Value $item.IsSuspicious
+        if ($item.Reason) { Add-CLKeyValue -Lines $lines -Label 'Ly do' -Value $item.Reason }
+        if ($kms.Count -gt 1) { $lines.Add('') }
+    }
+
+    Add-CLSection -Lines $lines -Title 'Dau hieu bat thuong'
+    $indicators = @($Result.Indicators | Where-Object { $_.IsSuspicious })
+    if ($indicators.Count -eq 0) { $lines.Add('Khong phat hien dau hieu kich hoat bat thuong.') }
+    foreach ($item in $indicators) {
+        Add-CLKeyValue -Lines $lines -Label 'Loai' -Value $item.Type
+        Add-CLKeyValue -Lines $lines -Label 'Muc do' -Value $item.Severity
+        Add-CLKeyValue -Lines $lines -Label 'Ten' -Value $item.Name
+        Add-CLKeyValue -Lines $lines -Label 'Vi tri' -Value $item.Location
+        Add-CLKeyValue -Lines $lines -Label 'Bang chung' -Value $item.Evidence
+        $lines.Add('')
+    }
+
+    Add-CLSection -Lines $lines -Title 'Ly do danh gia'
+    $reasons = @($Result.Risk.Reasons | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) })
+    if ($reasons.Count -eq 0) { $lines.Add('Khong co ly do rui ro dang chu y.') }
+    foreach ($reason in $reasons) { $lines.Add("- $reason") }
+
+    Add-CLSection -Lines $lines -Title 'Bao cao'
+    if ($Result.Report -and $Result.Report.JsonPath) {
+        Add-CLKeyValue -Lines $lines -Label 'Thu muc' -Value (Split-Path -Parent $Result.Report.JsonPath)
+        $lines.Add('Bao cao da duoc luu de ky thuat vien doi chieu khi can.')
+    }
+    else {
+        $lines.Add('Khong tao bao cao trong lan quet nay.')
+    }
+
+    $script:DetailBox.Text = ($lines -join "`r`n")
+}
+
 function Set-CLResultView {
     param([object]$Result)
 
@@ -434,19 +534,7 @@ function Set-CLResultView {
     $script:CleanupPlanButton.Visibility = if ($hasCrackSignal) { 'Visible' } else { 'Collapsed' }
     $script:ApplyCleanupButton.Visibility = if ($hasCrackSignal) { 'Visible' } else { 'Collapsed' }
 
-    $lines = New-Object System.Collections.Generic.List[string]
-    $lines.Add("Computer: $($Result.Compatibility.ComputerName)")
-    $lines.Add("OS: $($Result.Compatibility.OSName) build $($Result.Compatibility.BuildNumber)")
-    $lines.Add("Supported: $($Result.Compatibility.IsSupported)")
-    $lines.Add('')
-    foreach ($item in @($Result.WindowsLicenses)) { $lines.Add("Windows: $($item.LicenseStatusText) | $($item.ProductName) | Partial: $($item.PartialProductKey)") }
-    foreach ($item in @($Result.OfficeLicenses)) { $lines.Add("Office: $($item.LicenseStatusText) | $($item.ProductName) | Source: $($item.Source) | Partial: $($item.PartialProductKey)") }
-    foreach ($item in @($Result.KmsInfo | Where-Object { $_.IsConfigured })) { $lines.Add("KMS: $($item.KeyManagementServiceName):$($item.KeyManagementServicePort) | Suspicious: $($item.IsSuspicious)") }
-    foreach ($item in @($Result.Indicators)) { $lines.Add("Indicator: $($item.Type) | $($item.Severity) | $($item.Name) | $($item.Location) | $($item.Evidence)") }
-    $lines.Add('')
-    $lines.Add("Risk reasons: $($Result.Risk.Reasons -join '; ')")
-    if ($Result.Report) { $lines.Add("Report JSON: $($Result.Report.JsonPath)"); $lines.Add("Report CSV: $($Result.Report.CsvPath)") }
-    $script:DetailBox.Text = ($lines -join "`r`n")
+    Set-CLDetailView -Result $Result
 }
 
 function Start-CLGuiScan {
@@ -523,7 +611,7 @@ function Start-CLGuiScan {
                             Set-CLProgress -Percent 100 -Message (Get-CLText 'ScanCompleted')
                             Set-CLResultView -Result $script:lastResult
                             Add-CLLog (Get-CLText 'ScanCompleted')
-                            if ($script:lastResult.Report) { Add-CLLog "Report saved: $($script:lastResult.Report.JsonPath)" }
+                            if ($script:lastResult.Report) { Add-CLLog 'Report saved.' }
                         }
                         else {
                             Set-CLProgress -Percent 0 -Message (Get-CLText 'ScanFailed')
