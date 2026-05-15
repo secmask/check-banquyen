@@ -27,7 +27,23 @@ function Start-CLInstalledTool {
     if ($SkipReport) { $arguments += '-NoReport' }
     if ($UseVerbose) { $arguments += '-VerboseLog' }
 
-    Start-Process powershell.exe -ArgumentList ($arguments -join ' ') | Out-Null
+    Start-Process powershell.exe -ArgumentList ($arguments -join ' ') -WindowStyle Hidden -Wait | Out-Null
+}
+
+function Hide-CLConsoleWindow {
+    $signature = @'
+using System;
+using System.Runtime.InteropServices;
+public static class ConsoleWindow {
+    [DllImport("kernel32.dll")]
+    public static extern IntPtr GetConsoleWindow();
+    [DllImport("user32.dll")]
+    public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+}
+'@
+    Add-Type -TypeDefinition $signature -ErrorAction SilentlyContinue
+    $handle = [ConsoleWindow]::GetConsoleWindow()
+    if ($handle -ne [IntPtr]::Zero) { [ConsoleWindow]::ShowWindow($handle, 0) | Out-Null }
 }
 
 try {
@@ -78,8 +94,10 @@ try {
         Write-Host "Shortcut created: $shortcutPath"
     }
 
-    Start-CLInstalledTool -MainPath $main -RunGui $true -RunJson $false -SkipReport $NoReport -UseVerbose $VerboseLog
     Write-Host 'Check License GUI is starting...'
+    Hide-CLConsoleWindow
+    Start-CLInstalledTool -MainPath $main -RunGui $true -RunJson $false -SkipReport $NoReport -UseVerbose $VerboseLog
+    exit 0
 }
 catch {
     Write-Error "Install or scan failed: $($_.Exception.Message)"
