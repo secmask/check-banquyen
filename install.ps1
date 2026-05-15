@@ -84,11 +84,11 @@ try {
         Write-Host 'Check License GUI is starting...'
     }
     else {
-        $arguments = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $main)
-        if ($Json) { $arguments += '-Json' }
-        if ($NoReport) { $arguments += '-NoReport' }
-        if ($VerboseLog) { $arguments += '-VerboseLog' }
-        & powershell.exe @arguments
+        $scriptParams = @{}
+        if ($Json) { $scriptParams.Json = $true }
+        if ($NoReport) { $scriptParams.NoReport = $true }
+        if ($VerboseLog) { $scriptParams.VerboseLog = $true }
+        & $main @scriptParams
     }
 }
 catch {
