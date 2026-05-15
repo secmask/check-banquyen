@@ -1,10 +1,11 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param()
 
 Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
 
 $moduleRoot = Join-Path $PSScriptRoot 'modules'
 $rulesPath = Join-Path $PSScriptRoot 'config\rules.json'
+$reportRoot = Join-Path $env:ProgramData 'CheckLicense\reports'
 
 foreach ($module in @('Compatibility', 'WindowsLicense', 'VNextLicense', 'OfficeLicense', 'KmsScanner', 'CrackIndicatorScanner', 'RiskScore', 'Report', 'CleanupPlan', 'CleanupApply')) {
     Import-Module (Join-Path $moduleRoot "$module.psm1") -Force -ErrorAction Stop
@@ -79,131 +80,69 @@ $text = @{
         CleanupFailed         = 'Cleanup failed.'
         ApplyCleanupError     = 'Apply Cleanup error'
         ReadyLog              = 'Ready. Click CHECK to scan and save report.'
-        DetailOverview        = 'Overview'
-        DetailComputer        = 'Computer'
-        DetailOS              = 'Operating system'
-        DetailSupported       = 'Supported'
-        DetailRisk            = 'Risk'
-        DetailStatus          = 'Status'
-        DetailProduct         = 'Product'
-        DetailDescription     = 'Description'
-        DetailSource          = 'Source'
-        DetailPartialKey      = 'Partial key'
-        DetailNoWindows       = 'No Windows license information found.'
-        DetailNoOffice        = 'No Office license information found.'
-        DetailKms             = 'KMS'
-        DetailType            = 'Type'
-        DetailServer          = 'Server'
-        DetailPort            = 'Port'
-        DetailSuspicious      = 'Suspicious'
-        DetailReason          = 'Reason'
-        DetailNoKms           = 'No notable KMS configuration detected.'
-        DetailIndicators      = 'Activation indicators'
-        DetailSeverity        = 'Severity'
-        DetailName            = 'Name'
-        DetailLocation        = 'Location'
-        DetailEvidence        = 'Evidence'
-        DetailNoIndicators    = 'No suspicious activation indicators detected.'
-        DetailRiskReasons     = 'Risk reasons'
-        DetailNoRiskReasons   = 'No notable risk reasons.'
-        DetailReport          = 'Report'
-        DetailFolder          = 'Folder'
-        DetailReportSaved     = 'JSON report saved on the current user Desktop.'
-        DetailNoReport        = 'No report was created for this scan.'
     }
     vi = @{
-        AppTitle              = 'Ki?m tra b?n quy?n'
-        AppSubtitle           = 'C�ng c? ki?m tra b?n quy?n Windows v� Office'
-        ReadyTitle            = 'S?n s�ng qu�t'
-        ReadyStatus           = 'B?m CHECK d? qu�t Windows, Office, KMS v� c�c d?u hi?u k�ch ho?t b?t thu?ng.'
+        AppTitle              = 'Kiểm tra bản quyền'
+        AppSubtitle           = 'Công cụ kiểm tra bản quyền Windows và Office'
+        ReadyTitle            = 'Sẵn sàng quét'
+        ReadyStatus           = 'Bấm CHECK để quét Windows, Office, KMS và các dấu hiệu kích hoạt bất thường.'
         Check                 = 'CHECK'
-        Checking              = '�ANG CHECK...'
-        Overview              = 'T?ng quan'
-        ModeAdmin             = "Qu�t b?n quy?n Windows v� Office.`nKi?m tra KMS, service, task, registry v� file.`nT?o report v� k? ho?ch g? an to�n."
-        ModeStandard          = "Qu�t b?n quy?n Windows v� Office.`nKi?m tra KMS, service, task, registry v� file.`nT?o report v� k? ho?ch g? an to�n."
-        Status                = 'Tr?ng th�i'
-        NotScanned            = 'Chua qu�t'
-        WaitingForCheck       = '�ang ch? b?m CHECK'
-        ReviewCleanupPlan     = 'Xem k? ho?ch g?'
-        ApplyCleanup          = 'G? crack'
+        Checking              = 'ĐANG CHECK...'
+        Overview              = 'Tổng quan'
+        ModeAdmin             = "Quét bản quyền Windows và Office.`nKiểm tra KMS, service, task, registry và file.`nTạo report và kế hoạch gỡ an toàn."
+        ModeStandard          = "Quét bản quyền Windows và Office.`nKiểm tra KMS, service, task, registry và file.`nTạo report và kế hoạch gỡ an toàn."
+        Status                = 'Trạng thái'
+        NotScanned            = 'Chưa quét'
+        WaitingForCheck       = 'Đang chờ bấm CHECK'
+        ReviewCleanupPlan     = 'Xem kế hoạch gỡ'
+        ApplyCleanup          = 'Gỡ crack'
         Windows               = 'Windows'
         Office                = 'Office'
         Kms                   = 'KMS'
-        Indicators            = 'D?u hi?u'
-        Waiting               = '�ang ch?'
-        AuditDetails          = 'Chi ti?t ki?m tra'
-        StandardUser          = 'USER THU?NG'
+        Indicators            = 'Dấu hiệu'
+        Waiting               = 'Đang chờ'
+        AuditDetails          = 'Chi tiết kiểm tra'
+        StandardUser          = 'USER THƯỜNG'
         Administrator         = 'ADMINISTRATOR'
-        PreparingScan         = '�ang chu?n b? qu�t...'
-        StartingScan          = 'B?t d?u ki?m tra b?n quy?n ch?-d?c...'
-        CheckingCompatibility = '�ang ki?m tra tuong th�ch...'
-        CheckingWindows       = '�ang ki?m tra b?n quy?n Windows...'
-        CheckingOffice        = '�ang ki?m tra b?n quy?n Office...'
-        CheckingKms           = '�ang ki?m tra c?u h�nh KMS...'
-        CheckingIndicators    = '�ang ki?m tra d?u hi?u k�ch ho?t b?t thu?ng...'
-        CalculatingRisk       = '�ang t�nh di?m r?i ro...'
-        SavingReport          = '�ang luu report...'
-        ScanCompleted         = 'Qu�t ho�n t?t.'
-        ScanFailed            = 'Qu�t th?t b?i.'
-        Passed                = 'H?P L?'
-        UninstallSafe         = 'C� TH? G?'
-        NoCrackDetected       = 'Kh�ng c� crack'
-        CleanupAvailable      = 'C� th? g?'
-        Licensed              = 'C� B?N QUY?N'
-        DetectCracked         = 'NGHI NG?'
-        NoSuspiciousKms       = 'KH�NG C� KMS'
-        Suspicious            = '��NG NG?'
-        Found                 = 'T�M TH?Y'
-        NoIndicator           = 'KH�NG PH�T HI?N'
-        RunCheckFirstPlan     = 'H�y b?m CHECK tru?c d? t?o k? ho?ch g?.'
-        RunCheckFirstApply    = 'H�y b?m CHECK tru?c khi g? crack.'
-        CleanupAssistant      = 'Tr? l� g? crack'
-        CleanupDryRun         = 'Tr? l� g? crack - Ch?y th?'
-        DryRunNoChange        = 'Chua thay d?i file, service, task, registry value ho?c license key n�o.'
-        DryRunGenerated       = '�� t?o k? ho?ch g? th?. Chua c� thay d?i n�o.'
-        NoActions             = 'Kh�ng c� h�nh d?ng g? n�o.'
-        AdminRequiredTitle    = 'C?n quy?n Administrator'
-        AdminRequired         = 'G? crack c?n quy?n Administrator. B?m OK d? kh?i d?ng l?i Check License b?ng quy?n Administrator.'
-        ConfirmApplyTitle     = 'X�c nh?n g? crack'
-        ConfirmApply          = 'S? th?c hi?n {0} h�nh d?ng g?.`r`nRegistry s? du?c backup, file/folder s? du?c dua v�o quarantine v� log s? du?c luu.`r`n`r`n{1}`r`n`r`nTi?p t?c?'
-        ApplyingCleanup       = '�ang th?c hi?n g?...'
-        ApplyingCleanupLog    = '�ang g? v?i backup/quarantine...'
-        CleanupCompleted      = 'G? ho�n t?t.'
-        CleanupCompletedMsg   = 'G? ho�n t?t.`r`nTh�nh c�ng: {0}, L?i: {1}, B? qua: {2}`r`n{3}'
-        CleanupFailed         = 'G? th?t b?i.'
-        ApplyCleanupError     = 'L?i g? crack'
-        ReadyLog              = 'S?n s�ng. B?m CHECK d? qu�t v� luu report.'
-        DetailOverview        = 'Tong quan'
-        DetailComputer        = 'May tinh'
-        DetailOS              = 'He dieu hanh'
-        DetailSupported       = 'Ho tro'
-        DetailRisk            = 'Rui ro'
-        DetailStatus          = 'Trang thai'
-        DetailProduct         = 'San pham'
-        DetailDescription     = 'Mo ta'
-        DetailSource          = 'Nguon'
-        DetailPartialKey      = 'Partial key'
-        DetailNoWindows       = 'Khong tim thay thong tin ban quyen Windows.'
-        DetailNoOffice        = 'Khong tim thay thong tin ban quyen Office.'
-        DetailKms             = 'KMS'
-        DetailType            = 'Loai'
-        DetailServer          = 'May chu'
-        DetailPort            = 'Cong'
-        DetailSuspicious      = 'Dang ngo'
-        DetailReason          = 'Ly do'
-        DetailNoKms           = 'Khong phat hien cau hinh KMS dang chu y.'
-        DetailIndicators      = 'Dau hieu bat thuong'
-        DetailSeverity        = 'Muc do'
-        DetailName            = 'Ten'
-        DetailLocation        = 'Vi tri'
-        DetailEvidence        = 'Bang chung'
-        DetailNoIndicators    = 'Khong phat hien dau hieu kich hoat bat thuong.'
-        DetailRiskReasons     = 'Ly do danh gia'
-        DetailNoRiskReasons   = 'Khong co ly do rui ro dang chu y.'
-        DetailReport          = 'Bao cao'
-        DetailFolder          = 'Thu muc'
-        DetailReportSaved     = 'Bao cao JSON da duoc luu tren Desktop cua user hien tai.'
-        DetailNoReport        = 'Khong tao bao cao trong lan quet nay.'
+        PreparingScan         = 'Đang chuẩn bị quét...'
+        StartingScan          = 'Bắt đầu kiểm tra bản quyền chỉ-đọc...'
+        CheckingCompatibility = 'Đang kiểm tra tương thích...'
+        CheckingWindows       = 'Đang kiểm tra bản quyền Windows...'
+        CheckingOffice        = 'Đang kiểm tra bản quyền Office...'
+        CheckingKms           = 'Đang kiểm tra cấu hình KMS...'
+        CheckingIndicators    = 'Đang kiểm tra dấu hiệu kích hoạt bất thường...'
+        CalculatingRisk       = 'Đang tính điểm rủi ro...'
+        SavingReport          = 'Đang lưu report...'
+        ScanCompleted         = 'Quét hoàn tất.'
+        ScanFailed            = 'Quét thất bại.'
+        Passed                = 'HỢP LỆ'
+        UninstallSafe         = 'CÓ THỂ GỠ'
+        NoCrackDetected       = 'Không có crack'
+        CleanupAvailable      = 'Có thể gỡ'
+        Licensed              = 'CÓ BẢN QUYỀN'
+        DetectCracked         = 'NGHI NGỜ'
+        NoSuspiciousKms       = 'KHÔNG CÓ KMS'
+        Suspicious            = 'ĐÁNG NGỜ'
+        Found                 = 'TÌM THẤY'
+        NoIndicator           = 'KHÔNG PHÁT HIỆN'
+        RunCheckFirstPlan     = 'Hãy bấm CHECK trước để tạo kế hoạch gỡ.'
+        RunCheckFirstApply    = 'Hãy bấm CHECK trước khi gỡ crack.'
+        CleanupAssistant      = 'Trợ lý gỡ crack'
+        CleanupDryRun         = 'Trợ lý gỡ crack - Chạy thử'
+        DryRunNoChange        = 'Chưa thay đổi file, service, task, registry value hoặc license key nào.'
+        DryRunGenerated       = 'Đã tạo kế hoạch gỡ thử. Chưa có thay đổi nào.'
+        NoActions             = 'Không có hành động gỡ nào.'
+        AdminRequiredTitle    = 'Cần quyền Administrator'
+        AdminRequired         = 'Gỡ crack cần quyền Administrator. Bấm OK để khởi động lại Check License bằng quyền Administrator.'
+        ConfirmApplyTitle     = 'Xác nhận gỡ crack'
+        ConfirmApply          = 'Sẽ thực hiện {0} hành động gỡ.`r`nRegistry sẽ được backup, file/folder sẽ được đưa vào quarantine và log sẽ được lưu.`r`n`r`n{1}`r`n`r`nTiếp tục?'
+        ApplyingCleanup       = 'Đang thực hiện gỡ...'
+        ApplyingCleanupLog    = 'Đang gỡ với backup/quarantine...'
+        CleanupCompleted      = 'Gỡ hoàn tất.'
+        CleanupCompletedMsg   = 'Gỡ hoàn tất.`r`nThành công: {0}, Lỗi: {1}, Bỏ qua: {2}`r`n{3}'
+        CleanupFailed         = 'Gỡ thất bại.'
+        ApplyCleanupError     = 'Lỗi gỡ crack'
+        ReadyLog              = 'Sẵn sàng. Bấm CHECK để quét và lưu report.'
     }
 }
 
@@ -296,7 +235,7 @@ $xaml = @"
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                     <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
                         <Button x:Name="EnglishButton" Content="EN" Tag="en" Width="44" Height="28" Padding="0" FontSize="13" ToolTip="English"/>
-                        <Button x:Name="VietnameseButton" Content="VI" Tag="vi" Width="44" Height="28" Padding="0" FontSize="13" Margin="6,0,0,0" ToolTip="Ti?ng Vi?t"/>
+                        <Button x:Name="VietnameseButton" Content="VI" Tag="vi" Width="44" Height="28" Padding="0" FontSize="13" Margin="6,0,0,0" ToolTip="Tiếng Việt"/>
                     </StackPanel>
                     <Border x:Name="AdminBadge" Background="#FFF4CE" CornerRadius="15" Padding="12,5" VerticalAlignment="Center">
                         <TextBlock x:Name="AdminBadgeText" Text="STANDARD USER" Foreground="#8A6A00" FontWeight="SemiBold"/>
@@ -494,70 +433,70 @@ function Set-CLDetailView {
     param([Parameter(Mandatory)] [object]$Result)
 
     $lines = New-Object System.Collections.Generic.List[string]
-    Add-CLSection -Lines $lines -Title $(Get-CLText 'DetailOverview')
-    Add-CLKeyValue -Lines $lines -Label $(Get-CLText 'DetailComputer') -Value $Result.Compatibility.ComputerName
-    Add-CLKeyValue -Lines $lines -Label $(Get-CLText 'DetailOS') -Value (('{0} build {1}' -f $Result.Compatibility.OSName, $Result.Compatibility.BuildNumber).Trim())
-    Add-CLKeyValue -Lines $lines -Label $(Get-CLText 'DetailSupported') -Value $Result.Compatibility.IsSupported
-    Add-CLKeyValue -Lines $lines -Label $(Get-CLText 'DetailRisk') -Value (('{0} / {1} / score {2}' -f $Result.Risk.Level, $Result.Risk.Category, $Result.Risk.Score).Trim())
+    Add-CLSection -Lines $lines -Title 'Tong quan'
+    Add-CLKeyValue -Lines $lines -Label 'May tinh' -Value $Result.Compatibility.ComputerName
+    Add-CLKeyValue -Lines $lines -Label 'He dieu hanh' -Value (('{0} build {1}' -f $Result.Compatibility.OSName, $Result.Compatibility.BuildNumber).Trim())
+    Add-CLKeyValue -Lines $lines -Label 'Ho tro' -Value $Result.Compatibility.IsSupported
+    Add-CLKeyValue -Lines $lines -Label 'Rui ro' -Value (('{0} / {1} / score {2}' -f $Result.Risk.Level, $Result.Risk.Category, $Result.Risk.Score).Trim())
 
     Add-CLSection -Lines $lines -Title 'Windows'
     $windows = @($Result.WindowsLicenses)
-    if ($windows.Count -eq 0) { $lines.Add((Get-CLText 'DetailNoWindows')) }
+    if ($windows.Count -eq 0) { $lines.Add('Khong tim thay thong tin ban quyen Windows.') }
     foreach ($item in $windows) {
-        Add-CLKeyValue -Lines $lines -Label $(Get-CLText 'DetailStatus') -Value $item.LicenseStatusText
-        Add-CLKeyValue -Lines $lines -Label $(Get-CLText 'DetailProduct') -Value $item.ProductName
-        Add-CLKeyValue -Lines $lines -Label $(Get-CLText 'DetailDescription') -Value $item.Description
-        Add-CLKeyValue -Lines $lines -Label $(Get-CLText 'DetailPartialKey') -Value $item.PartialProductKey
+        Add-CLKeyValue -Lines $lines -Label 'Trang thai' -Value $item.LicenseStatusText
+        Add-CLKeyValue -Lines $lines -Label 'San pham' -Value $item.ProductName
+        Add-CLKeyValue -Lines $lines -Label 'Mo ta' -Value $item.Description
+        Add-CLKeyValue -Lines $lines -Label 'Partial key' -Value $item.PartialProductKey
         if ($windows.Count -gt 1) { $lines.Add('') }
     }
 
     Add-CLSection -Lines $lines -Title 'Office'
     $office = @($Result.OfficeLicenses)
-    if ($office.Count -eq 0) { $lines.Add((Get-CLText 'DetailNoOffice')) }
+    if ($office.Count -eq 0) { $lines.Add('Khong tim thay thong tin ban quyen Office.') }
     foreach ($item in $office) {
-        Add-CLKeyValue -Lines $lines -Label $(Get-CLText 'DetailStatus') -Value $item.LicenseStatusText
-        Add-CLKeyValue -Lines $lines -Label $(Get-CLText 'DetailProduct') -Value $item.ProductName
-        Add-CLKeyValue -Lines $lines -Label $(Get-CLText 'DetailSource') -Value $item.Source
-        Add-CLKeyValue -Lines $lines -Label $(Get-CLText 'DetailPartialKey') -Value $item.PartialProductKey
+        Add-CLKeyValue -Lines $lines -Label 'Trang thai' -Value $item.LicenseStatusText
+        Add-CLKeyValue -Lines $lines -Label 'San pham' -Value $item.ProductName
+        Add-CLKeyValue -Lines $lines -Label 'Nguon' -Value $item.Source
+        Add-CLKeyValue -Lines $lines -Label 'Partial key' -Value $item.PartialProductKey
         if ($office.Count -gt 1) { $lines.Add('') }
     }
 
-    Add-CLSection -Lines $lines -Title $(Get-CLText 'DetailKms')
+    Add-CLSection -Lines $lines -Title 'KMS'
     $kms = @($Result.KmsInfo | Where-Object { $_.IsConfigured -or $_.IsSuspicious })
-    if ($kms.Count -eq 0) { $lines.Add((Get-CLText 'DetailNoKms')) }
+    if ($kms.Count -eq 0) { $lines.Add('Khong phat hien cau hinh KMS dang chu y.') }
     foreach ($item in $kms) {
-        Add-CLKeyValue -Lines $lines -Label $(Get-CLText 'DetailType') -Value $item.Scope
-        Add-CLKeyValue -Lines $lines -Label $(Get-CLText 'DetailServer') -Value $item.KeyManagementServiceName
-        Add-CLKeyValue -Lines $lines -Label $(Get-CLText 'DetailPort') -Value $item.KeyManagementServicePort
-        Add-CLKeyValue -Lines $lines -Label $(Get-CLText 'DetailSuspicious') -Value $item.IsSuspicious
-        if ($item.Reason) { Add-CLKeyValue -Lines $lines -Label $(Get-CLText 'DetailReason') -Value $item.Reason }
+        Add-CLKeyValue -Lines $lines -Label 'Loai' -Value $item.Scope
+        Add-CLKeyValue -Lines $lines -Label 'May chu' -Value $item.KeyManagementServiceName
+        Add-CLKeyValue -Lines $lines -Label 'Cong' -Value $item.KeyManagementServicePort
+        Add-CLKeyValue -Lines $lines -Label 'Dang ngo' -Value $item.IsSuspicious
+        if ($item.Reason) { Add-CLKeyValue -Lines $lines -Label 'Ly do' -Value $item.Reason }
         if ($kms.Count -gt 1) { $lines.Add('') }
     }
 
-    Add-CLSection -Lines $lines -Title $(Get-CLText 'DetailIndicators')
+    Add-CLSection -Lines $lines -Title 'Dau hieu bat thuong'
     $indicators = @($Result.Indicators | Where-Object { $_.IsSuspicious })
-    if ($indicators.Count -eq 0) { $lines.Add((Get-CLText 'DetailNoIndicators')) }
+    if ($indicators.Count -eq 0) { $lines.Add('Khong phat hien dau hieu kich hoat bat thuong.') }
     foreach ($item in $indicators) {
-        Add-CLKeyValue -Lines $lines -Label $(Get-CLText 'DetailType') -Value $item.Type
-        Add-CLKeyValue -Lines $lines -Label $(Get-CLText 'DetailSeverity') -Value $item.Severity
-        Add-CLKeyValue -Lines $lines -Label $(Get-CLText 'DetailName') -Value $item.Name
-        Add-CLKeyValue -Lines $lines -Label $(Get-CLText 'DetailLocation') -Value $item.Location
-        Add-CLKeyValue -Lines $lines -Label $(Get-CLText 'DetailEvidence') -Value $item.Evidence
+        Add-CLKeyValue -Lines $lines -Label 'Loai' -Value $item.Type
+        Add-CLKeyValue -Lines $lines -Label 'Muc do' -Value $item.Severity
+        Add-CLKeyValue -Lines $lines -Label 'Ten' -Value $item.Name
+        Add-CLKeyValue -Lines $lines -Label 'Vi tri' -Value $item.Location
+        Add-CLKeyValue -Lines $lines -Label 'Bang chung' -Value $item.Evidence
         $lines.Add('')
     }
 
-    Add-CLSection -Lines $lines -Title $(Get-CLText 'DetailRiskReasons')
+    Add-CLSection -Lines $lines -Title 'Ly do danh gia'
     $reasons = @($Result.Risk.Reasons | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) })
-    if ($reasons.Count -eq 0) { $lines.Add((Get-CLText 'DetailNoRiskReasons')) }
+    if ($reasons.Count -eq 0) { $lines.Add('Khong co ly do rui ro dang chu y.') }
     foreach ($reason in $reasons) { $lines.Add("- $reason") }
 
-    Add-CLSection -Lines $lines -Title $(Get-CLText 'DetailReport')
-    if ($Result.Report -and $Result.Report.Directory) {
-        Add-CLKeyValue -Lines $lines -Label $(Get-CLText 'DetailFolder') -Value $Result.Report.Directory
-        $lines.Add((Get-CLText 'DetailReportSaved'))
+    Add-CLSection -Lines $lines -Title 'Bao cao'
+    if ($Result.Report -and $Result.Report.JsonPath) {
+        Add-CLKeyValue -Lines $lines -Label 'Thu muc' -Value (Split-Path -Parent $Result.Report.JsonPath)
+        $lines.Add('Bao cao da duoc luu de ky thuat vien doi chieu khi can.')
     }
     else {
-        $lines.Add((Get-CLText 'DetailNoReport'))
+        $lines.Add('Khong tao bao cao trong lan quet nay.')
     }
 
     $script:DetailBox.Text = ($lines -join "`r`n")
@@ -801,6 +740,7 @@ $ApplyCleanupButton.Add_Click({
 Update-CLLanguageView
 Add-CLLog (Get-CLText 'ReadyLog')
 $window.ShowDialog() | Out-Null
+
 
 
 
