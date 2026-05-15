@@ -404,7 +404,7 @@ function Add-CLLog {
 
 function Add-CLSection {
     param(
-        [Parameter(Mandatory)] [System.Collections.Generic.List[string]]$Lines,
+        [System.Collections.Generic.List[string]]$Lines,
         [Parameter(Mandatory)] [string]$Title
     )
 
@@ -421,7 +421,7 @@ function Format-CLValue {
 
 function Add-CLKeyValue {
     param(
-        [Parameter(Mandatory)] [System.Collections.Generic.List[string]]$Lines,
+        [System.Collections.Generic.List[string]]$Lines,
         [Parameter(Mandatory)] [string]$Label,
         [object]$Value
     )
@@ -622,6 +622,7 @@ function Start-CLGuiScan {
                         $script:scanJob = $null
                         $script:CheckButton.IsEnabled = $true
                         $script:CheckButton.Content = Get-CLText 'Check'
+                        if ($script:lastResult) { $script:StatusText.Text = Get-CLText 'ScanCompleted' }
                     }
                 }
                 catch {
