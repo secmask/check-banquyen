@@ -32,6 +32,9 @@ function Start-CLInstalledTool {
 }
 
 try {
+    if (Test-Path -LiteralPath $installRoot) {
+        Remove-Item -LiteralPath $installRoot -Recurse -Force -ErrorAction SilentlyContinue
+    }
     New-Item -ItemType Directory -Force -Path $installRoot | Out-Null
 
     Write-Verbose "Downloading $ReleaseUrl"
@@ -81,7 +84,7 @@ try {
         Write-Host 'Check License GUI is starting...'
     }
     else {
-        $arguments = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', "`"$main`"")
+        $arguments = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $main)
         if ($Json) { $arguments += '-Json' }
         if ($NoReport) { $arguments += '-NoReport' }
         if ($VerboseLog) { $arguments += '-VerboseLog' }
