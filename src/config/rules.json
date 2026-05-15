@@ -1,0 +1,51 @@
+{
+  "suspiciousKmsKeywords": [
+    "localhost",
+    "127.0.0.1",
+    "vlmcsd",
+    "vlmcs",
+    "kms8",
+    "kms9",
+    "msguides",
+    "kmsauto",
+    "kms.loli",
+    "kms.digiboy",
+    "s1ave77"
+  ],
+  "indicatorNames": [
+    "AutoKMS",
+    "KMSpico",
+    "KMSAuto",
+    "AAct",
+    "vlmcsd",
+    "vlmcs",
+    "Microsoft Activation Scripts",
+    "MAS",
+    "Ohook",
+    "TSforge",
+    "HWID",
+    "KMS_VL_ALL",
+    "KMS38",
+    "Office Tool Plus",
+    "Ratiborus"
+  ],
+  "indicatorPaths": [
+    "%ProgramFiles%\\KMSpico",
+    "%ProgramFiles(x86)%\\KMSpico",
+    "%ProgramFiles%\\KMSAuto",
+    "%ProgramFiles(x86)%\\KMSAuto",
+    "%ProgramData%\\KMSAuto",
+    "%ProgramData%\\KMSPico",
+    "%ProgramData%\\Microsoft Activation Scripts",
+    "%ProgramData%\\MAS",
+    "%ProgramData%\\KMS_VL_ALL",
+    "%ProgramData%\\AAct_Tools",
+    "%ProgramData%\\Online_KMS_Activation",
+    "%SystemRoot%\\AutoKMS",
+    "%SystemRoot%\\KMSAuto",
+    "%SystemRoot%\\System32\\SppExtComObjHook.dll",
+    "%SystemRoot%\\SysWOW64\\SppExtComObjHook.dll",
+    "%SystemRoot%\\System32\\SppExtComObjPatcher.exe",
+    "%SystemRoot%\\SysWOW64\\SppExtComObjPatcher.exe"
+  ]
+}
