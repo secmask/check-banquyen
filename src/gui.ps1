@@ -31,8 +31,8 @@ $text = @{
         Status                = 'Status'
         NotScanned            = 'Not scanned'
         WaitingForCheck       = 'Waiting for CHECK'
-        ReviewCleanupPlan     = 'Review Cleanup Plan'
-        ApplyCleanup          = 'Apply Cleanup'
+        ReviewCleanupPlan     = 'Details'
+        ApplyCleanup          = 'Remove Crack'
         Windows               = 'Windows'
         Office                = 'Office'
         Kms                   = 'KMS'
@@ -64,15 +64,15 @@ $text = @{
         NoIndicator           = 'None'
         RunCheckFirstPlan     = 'Run CHECK first to create a cleanup plan.'
         RunCheckFirstApply    = 'Run CHECK first before applying cleanup.'
-        CleanupAssistant      = 'Cleanup Assistant'
-        CleanupDryRun         = 'Cleanup Assistant - Dry Run'
-        DryRunNoChange        = 'No files, services, tasks, registry values, or license keys were changed.'
-        DryRunGenerated       = 'Cleanup dry-run plan generated. No changes were made.'
+        CleanupAssistant      = 'Details'
+        CleanupDryRun         = 'Crack detection details'
+        DryRunNoChange        = 'Reasons for the conclusion and cleanup actions are listed below.'
+        DryRunGenerated       = 'Detection details displayed.'
         NoActions             = 'No cleanup actions are available.'
         AdminRequiredTitle    = 'Administrator required'
         AdminRequired         = 'Uninstall Crack requires Administrator privileges. Click OK to restart Check License as Administrator.'
-        ConfirmApplyTitle     = 'Confirm Apply Cleanup'
-        ConfirmApply          = 'This will apply {0} cleanup action(s).`r`nRegistry keys are backed up, files/folders are quarantined, and a cleanup log is saved.`r`n`r`n{1}`r`n`r`nContinue?'
+        ConfirmApplyTitle     = 'Remove Crack'
+        ConfirmApply          = 'Ready to remove detected activation cracks.`r`n`r`nActions: {0}`r`nSafety: registry backup, quarantine, cleanup log`r`nRestart: {1}`r`n`r`nContinue cleanup?'
         ApplyingCleanup       = 'Applying cleanup actions...'
         ApplyingCleanupLog    = 'Applying cleanup actions with backup/quarantine...'
         CleanupCompleted      = 'Cleanup completed.'
@@ -94,7 +94,7 @@ $text = @{
         Status                = 'Trạng thái'
         NotScanned            = 'Chưa quét'
         WaitingForCheck       = 'Đang chờ bấm CHECK'
-        ReviewCleanupPlan     = 'Xem kế hoạch gỡ'
+        ReviewCleanupPlan     = 'Chi tiết'
         ApplyCleanup          = 'Gỡ crack'
         Windows               = 'Windows'
         Office                = 'Office'
@@ -127,15 +127,15 @@ $text = @{
         NoIndicator           = 'KHÔNG PHÁT HIỆN'
         RunCheckFirstPlan     = 'Hãy bấm CHECK trước để tạo kế hoạch gỡ.'
         RunCheckFirstApply    = 'Hãy bấm CHECK trước khi gỡ crack.'
-        CleanupAssistant      = 'Trợ lý gỡ crack'
-        CleanupDryRun         = 'Trợ lý gỡ crack - Chạy thử'
-        DryRunNoChange        = 'Chưa thay đổi file, service, task, registry value hoặc license key nào.'
-        DryRunGenerated       = 'Đã tạo kế hoạch gỡ thử. Chưa có thay đổi nào.'
+        CleanupAssistant      = 'Chi tiết'
+        CleanupDryRun         = 'Chi tiết kết luận crack'
+        DryRunNoChange        = 'Nguyên nhân kết luận và hành động gỡ được liệt kê bên dưới.'
+        DryRunGenerated       = 'Đã hiển thị chi tiết kết luận.'
         NoActions             = 'Không có hành động gỡ nào.'
         AdminRequiredTitle    = 'Cần quyền Administrator'
         AdminRequired         = 'Gỡ crack cần quyền Administrator. Bấm OK để khởi động lại Check License bằng quyền Administrator.'
-        ConfirmApplyTitle     = 'Xác nhận gỡ crack'
-        ConfirmApply          = 'Sẽ thực hiện {0} hành động gỡ.`r`nRegistry sẽ được backup, file/folder sẽ được đưa vào quarantine và log sẽ được lưu.`r`n`r`n{1}`r`n`r`nTiếp tục?'
+        ConfirmApplyTitle     = 'Gỡ crack'
+        ConfirmApply          = 'Sẵn sàng gỡ các dấu hiệu kích hoạt crack đã phát hiện.`r`n`r`nHành động: {0}`r`nAn toàn: backup registry, quarantine file, lưu log`r`nKhởi động lại: {1}`r`n`r`nTiếp tục gỡ?'
         ApplyingCleanup       = 'Đang thực hiện gỡ...'
         ApplyingCleanupLog    = 'Đang gỡ với backup/quarantine...'
         CleanupCompleted      = 'Gỡ hoàn tất.'
@@ -148,8 +148,34 @@ $text = @{
 
 function Get-CLText { param([string]$Key) $script:text[$script:language][$Key] }
 
+function New-CLDemoScanResult {
+    $indicator = [pscustomobject]@{
+        Type = 'OfficeCrackOhook'
+        Name = 'Office Crack Ohook'
+        Location = 'C:\Program Files\Microsoft Office\root\vfs\System\sppc.dll'
+        Evidence = 'DEMO MODE: Non-Microsoft Office sppc hook DLL; SHA256=demo; Signature=NotSigned'
+        Severity = 'High'
+        IsSuspicious = $true
+    }
+
+    [pscustomobject]@{
+        Tool            = 'check-license-demo'
+        GeneratedAt     = (Get-Date).ToString('o')
+        Compatibility   = [pscustomobject]@{ ComputerName = $env:COMPUTERNAME; OSName = 'Demo Windows'; BuildNumber = 22631; IsSupported = $true }
+        WindowsLicenses = @([pscustomobject]@{ ProductName = 'Demo Windows Pro'; Description = 'RETAIL channel'; LicenseStatusText = 'Licensed'; PartialProductKey = 'DEMO1'; IsLicensed = $true })
+        OfficeLicenses  = @([pscustomobject]@{ Source = 'Demo'; ProductName = 'Demo Microsoft Office'; LicenseStatusText = 'Licensed'; PartialProductKey = 'DEMO2'; ToolPath = $null; IsLicensed = $true })
+        KmsInfo         = @()
+        Indicators      = @($indicator)
+        Risk            = [pscustomobject]@{ Score = 100; Level = 'High'; Category = 'Crack Detected'; Reasons = @('Office Crack Ohook detected', 'Demo data for cleanup UI testing') }
+        Report          = $null
+        IsDemo          = $true
+    }
+}
+
 function Invoke-CLGuiScan {
     param([switch]$NoReport)
+
+    if ($env:CHECKLICENSE_DEMO_CRACK -eq '1') { return New-CLDemoScanResult }
 
     $compatibility = Test-CLCompatibility
     $windowsLicenses = @(Get-CLWindowsLicense)
@@ -290,6 +316,8 @@ $xaml = @"
                             <TextBlock x:Name="RiskLabelText" Text="Status" Foreground="#616161" FontSize="12"/>
                             <TextBlock x:Name="RiskText" Text="Not scanned" Foreground="#1F1F1F" FontSize="20" FontWeight="SemiBold" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" MaxWidth="228"/>
                             <TextBlock x:Name="ScoreText" Text="Waiting for CHECK" Foreground="#616161" FontSize="12" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" MaxWidth="228" Margin="0,2,0,0"/>
+                            <TextBlock x:Name="ScopeText" Text="Scope: Not scanned" Foreground="#616161" FontSize="12" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" MaxWidth="228" Margin="0,8,0,0"/>
+                            <TextBlock x:Name="ActionText" Text="Action: Run CHECK" Foreground="#616161" FontSize="12" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" MaxWidth="228" Margin="0,2,0,0"/>
                             <Button x:Name="CleanupPlanButton" Content="Review Cleanup Plan" Style="{StaticResource DangerButton}" Margin="0,10,0,0" Visibility="Collapsed" HorizontalAlignment="Stretch"/>
                             <Button x:Name="ApplyCleanupButton" Content="Apply Cleanup" Style="{StaticResource DangerButton}" Margin="0,8,0,0" Visibility="Collapsed" HorizontalAlignment="Stretch"/>
                         </StackPanel>
@@ -322,7 +350,7 @@ $xaml = @"
 $reader = [System.Xml.XmlReader]::Create([System.IO.StringReader]::new($xaml))
 $window = [Windows.Markup.XamlReader]::Load($reader)
 
-$names = 'AppTitleText', 'AppSubtitleText', 'EnglishButton', 'VietnameseButton', 'ReadyTitleText', 'OverviewText', 'WindowsLabelText', 'OfficeLabelText', 'KmsLabelText', 'IndicatorLabelText', 'AuditDetailsText', 'RiskLabelText', 'RiskText', 'ScoreText', 'WindowsText', 'OfficeText', 'KmsText', 'IndicatorText', 'WindowsBar', 'OfficeBar', 'KmsBar', 'IndicatorBar', 'DetailBox', 'CheckButton', 'StatusText', 'ProgressBar', 'ProgressText', 'CleanupPlanButton', 'ApplyCleanupButton', 'AdminBadge', 'AdminBadgeText', 'ModeText'
+$names = 'AppTitleText', 'AppSubtitleText', 'EnglishButton', 'VietnameseButton', 'ReadyTitleText', 'OverviewText', 'WindowsLabelText', 'OfficeLabelText', 'KmsLabelText', 'IndicatorLabelText', 'AuditDetailsText', 'RiskLabelText', 'RiskText', 'ScoreText', 'ScopeText', 'ActionText', 'WindowsText', 'OfficeText', 'KmsText', 'IndicatorText', 'WindowsBar', 'OfficeBar', 'KmsBar', 'IndicatorBar', 'DetailBox', 'CheckButton', 'StatusText', 'ProgressBar', 'ProgressText', 'CleanupPlanButton', 'ApplyCleanupButton', 'AdminBadge', 'AdminBadgeText', 'ModeText'
 foreach ($name in $names) { Set-Variable -Name $name -Value $window.FindName($name) -Scope Script }
 
 function Update-CLLanguageView {
@@ -346,6 +374,8 @@ function Update-CLLanguageView {
         $script:StatusText.Text = Get-CLText 'ReadyStatus'
         $script:RiskText.Text = Get-CLText 'NotScanned'
         $script:ScoreText.Text = Get-CLText 'WaitingForCheck'
+        $script:ScopeText.Text = 'Scope: Not scanned'
+        $script:ActionText.Text = 'Action: Run CHECK'
         $script:WindowsText.Text = Get-CLText 'Waiting'
         $script:OfficeText.Text = Get-CLText 'Waiting'
         $script:KmsText.Text = Get-CLText 'Waiting'
@@ -508,9 +538,13 @@ function Get-CLDirectCrackConclusion {
     param([object[]]$Indicators)
 
     $direct = @($Indicators | Where-Object { $_.IsSuspicious -and $_.Type -in @('OfficeCrackOhook', 'SppStoreTsforge', 'WindowsCrackHWIDFile', 'WindowsCrackHWIDFolder') })
-    if (@($direct | Where-Object { $_.Type -eq 'OfficeCrackOhook' }).Count -gt 0) { return 'Office Crack Ohook' }
+    $hasOffice = @($direct | Where-Object { $_.Type -eq 'OfficeCrackOhook' }).Count -gt 0
+    $hasWindows = @($direct | Where-Object { $_.Type -in @('SppStoreTsforge', 'WindowsCrackHWIDFile', 'WindowsCrackHWIDFolder') }).Count -gt 0
+
+    if ($hasWindows -and $hasOffice) { return 'Windows + Office Crack' }
     if (@($direct | Where-Object { $_.Type -eq 'SppStoreTsforge' }).Count -gt 0) { return 'Windows/Office Crack TSforge' }
-    if (@($direct | Where-Object { $_.Type -in @('WindowsCrackHWIDFile', 'WindowsCrackHWIDFolder') }).Count -gt 0) { return 'Windows Crack HWID' }
+    if ($hasWindows) { return 'Windows Crack HWID' }
+    if ($hasOffice) { return 'Office Crack Ohook' }
     return $null
 }
 
@@ -529,6 +563,14 @@ function Set-CLResultView {
     $script:RiskLabelText.Text = Get-CLText 'Status'
     $script:RiskText.Text = if ($directConclusion) { $directConclusion } elseif ($hasCrackSignal) { Get-CLText 'UninstallSafe' } else { Get-CLText 'Passed' }
     $script:ScoreText.Text = if ($hasCrackSignal) { "$(Get-CLText 'CleanupAvailable') | $kmsSuspicious KMS | $indicatorCount indicator(s)" } else { Get-CLText 'NoCrackDetected' }
+    $hasWindowsCrack = @($Result.Indicators | Where-Object { $_.IsSuspicious -and ($_.Type -in @('SppStoreTsforge', 'WindowsCrackHWIDFile', 'WindowsCrackHWIDFolder') -or $_.Name -match 'HWID|KMS38|TSforge|MAS') }).Count -gt 0
+    $hasOfficeCrack = @($Result.Indicators | Where-Object { $_.IsSuspicious -and $_.Type -in @('OfficeCrackOhook', 'OfficeProtectionRegistry') }).Count -gt 0
+    $scope = if ($hasWindowsCrack -and $hasOfficeCrack) { 'Windows + Office affected' } elseif ($hasWindowsCrack) { 'Windows affected' } elseif ($hasOfficeCrack) { 'Office affected' } elseif ($hasCrackSignal) { 'Activation traces found' } else { 'No affected product' }
+    $action = if ($hasCrackSignal) { 'Ready to clean activation' } else { 'No cleanup needed' }
+    $script:ScopeText.Text = "Scope: $scope"
+    $script:ActionText.Text = "Action: $action"
+    $script:ScopeText.Foreground = if ($hasCrackSignal) { '#D13438' } else { '#107C10' }
+    $script:ActionText.Foreground = if ($hasCrackSignal) { '#D13438' } else { '#107C10' }
     $script:RiskText.Foreground = if ($hasCrackSignal) { '#D13438' } else { '#107C10' }
 
     $script:WindowsText.Text = if ($windowsLicensed) { Get-CLText 'Licensed' } elseif ($win) { Get-CLText 'DetectCracked' } else { Get-CLText 'DetectCracked' }
@@ -569,6 +611,25 @@ function Start-CLGuiScan {
             }
 
             $rules = Get-Content -LiteralPath $RulesPath -Raw -ErrorAction Stop | ConvertFrom-Json
+
+            if ($env:CHECKLICENSE_DEMO_CRACK -eq '1') {
+                [pscustomobject]@{ Kind = 'Progress'; Percent = 90; Message = 'Calculating risk score...' }
+                $indicator = [pscustomobject]@{ Type = 'OfficeCrackOhook'; Name = 'Office Crack Ohook'; Location = 'C:\Program Files\Microsoft Office\root\vfs\System\sppc.dll'; Evidence = 'DEMO MODE: Non-Microsoft Office sppc hook DLL; SHA256=demo; Signature=NotSigned'; Severity = 'High'; IsSuspicious = $true }
+                $result = [pscustomobject]@{
+                    Tool            = 'check-license-demo'
+                    GeneratedAt     = (Get-Date).ToString('o')
+                    Compatibility   = [pscustomobject]@{ ComputerName = $env:COMPUTERNAME; OSName = 'Demo Windows'; BuildNumber = 22631; IsSupported = $true }
+                    WindowsLicenses = @([pscustomobject]@{ ProductName = 'Demo Windows Pro'; Description = 'RETAIL channel'; LicenseStatusText = 'Licensed'; PartialProductKey = 'DEMO1'; IsLicensed = $true })
+                    OfficeLicenses  = @([pscustomobject]@{ Source = 'Demo'; ProductName = 'Demo Microsoft Office'; LicenseStatusText = 'Licensed'; PartialProductKey = 'DEMO2'; ToolPath = $null; IsLicensed = $true })
+                    KmsInfo         = @()
+                    Indicators      = @($indicator)
+                    Risk            = [pscustomobject]@{ Score = 100; Level = 'High'; Category = 'Crack Detected'; Reasons = @('Office Crack Ohook detected', 'Demo data for cleanup UI testing') }
+                    Report          = $null
+                    IsDemo          = $true
+                }
+                [pscustomobject]@{ Kind = 'Result'; Data = $result }
+                return
+            }
 
             [pscustomobject]@{ Kind = 'Progress'; Percent = 8; Message = 'Checking compatibility...' }
             $compatibility = Test-CLCompatibility
@@ -666,9 +727,25 @@ $CleanupPlanButton.Add_Click({
         $plan = New-CLCleanupPlan -ScanResult $script:lastResult
         $lines = New-Object System.Collections.Generic.List[string]
         $lines.Add((Get-CLText 'CleanupDryRun'))
+        $lines.Add('=' * 28)
         $lines.Add((Get-CLText 'DryRunNoChange'))
         $lines.Add('')
-        $lines.Add($plan.Summary)
+        $lines.Add("Ket luan: $($script:lastResult.Risk.Category) / $($script:lastResult.Risk.Level) / score $($script:lastResult.Risk.Score)")
+        $lines.Add('')
+        $lines.Add('Nguyen nhan ket luan')
+        $lines.Add('-------------------')
+        foreach ($reason in @($script:lastResult.Risk.Reasons)) { $lines.Add("- $reason") }
+        $lines.Add('')
+        $lines.Add('Bang chung')
+        $lines.Add('----------')
+        foreach ($indicator in @($script:lastResult.Indicators | Where-Object { $_.IsSuspicious })) {
+            $lines.Add("[$($indicator.Severity)] $($indicator.Name) ($($indicator.Type))")
+            $lines.Add("Vi tri    : $($indicator.Location)")
+            $lines.Add("Bang chung: $($indicator.Evidence)")
+            $lines.Add('')
+        }
+        $lines.Add('Hanh dong khi bam Go crack')
+        $lines.Add('--------------------------')
         $lines.Add($plan.RestartNotice)
         $lines.Add('')
         foreach ($action in @($plan.Actions)) {
@@ -677,13 +754,12 @@ $CleanupPlanButton.Add_Click({
             $lines.Add("Target : $($action.Target)")
             $lines.Add("Reason : $($action.Reason)")
             $lines.Add("Preview: $($action.CommandPreview)")
-            $lines.Add("Restart: $($action.RestartReason)")
             $lines.Add('')
         }
 
         $script:DetailBox.Text = ($lines -join "`r`n")
         Add-CLLog (Get-CLText 'DryRunGenerated')
-        [System.Windows.MessageBox]::Show("$($plan.Summary)`r`n$($plan.RestartNotice)", (Get-CLText 'CleanupDryRun'), 'OK', 'Information') | Out-Null
+        [System.Windows.MessageBox]::Show((Get-CLText 'DryRunGenerated'), (Get-CLText 'CleanupDryRun'), 'OK', 'Information') | Out-Null
     })
 
 $ApplyCleanupButton.Add_Click({
@@ -693,6 +769,15 @@ $ApplyCleanupButton.Add_Click({
         }
 
         $plan = New-CLCleanupPlan -ScanResult $script:lastResult
+        if ($script:lastResult.IsDemo) {
+            $plan = [pscustomobject]@{
+                RestartNotice = 'DEMO MODE: No restart is required because no system changes will be made.'
+                Actions = @(
+                    [pscustomobject]@{ Id = 'DEMO-1'; Category = 'OfficeCrackOhook'; Name = 'Office Crack Ohook'; Action = 'Quarantine hook DLL'; Target = 'C:\Program Files\Microsoft Office\root\vfs\System\sppc.dll'; Reason = 'Demo Ohook DLL indicator'; CommandPreview = 'Move DLL to quarantine'; Risk = 'High'; RestartRecommended = $true; RestartReason = 'Restart Office after removing hook DLL.' },
+                    [pscustomobject]@{ Id = 'DEMO-2'; Category = 'OfficeActivationReset'; Name = 'Office license cache'; Action = 'Reset Office activation cache'; Target = 'Current user Office licensing cache'; Reason = 'Demo reset Office activation state'; CommandPreview = 'Remove Office tokens and credentials'; Risk = 'High'; RestartRecommended = $true; RestartReason = 'Restart Office after resetting activation cache.' }
+                )
+            }
+        }
         if (@($plan.Actions).Count -eq 0) {
             [System.Windows.MessageBox]::Show((Get-CLText 'NoActions'), (Get-CLText 'ApplyCleanup'), 'OK', 'Information') | Out-Null
             return
@@ -705,7 +790,7 @@ $ApplyCleanupButton.Add_Click({
         }
 
         $message = (Get-CLText 'ConfirmApply') -f @($plan.Actions).Count, $plan.RestartNotice
-        $confirm = [System.Windows.MessageBox]::Show($message, (Get-CLText 'ConfirmApplyTitle'), 'YesNo', 'Warning')
+        $confirm = [System.Windows.MessageBox]::Show($message, (Get-CLText 'ConfirmApplyTitle'), 'YesNo', 'Question')
         if ($confirm -ne 'Yes') { return }
 
         try {
@@ -714,31 +799,74 @@ $ApplyCleanupButton.Add_Click({
             Set-CLProgress -Percent 5 -Message (Get-CLText 'ApplyingCleanup')
             Add-CLLog (Get-CLText 'ApplyingCleanupLog')
 
-            $applyResult = Invoke-CLCleanupPlan -Plan $plan -Force
+            if ($script:lastResult.IsDemo) {
+                $applyResult = [pscustomobject]@{
+                    GeneratedAt        = (Get-Date).ToString('o')
+                    SessionRoot        = 'DEMO MODE - no files were created'
+                    BackupRoot         = 'DEMO MODE - no registry backup was created'
+                    QuarantineRoot     = 'DEMO MODE - no quarantine was created'
+                    AppliedCount       = 2
+                    FailedCount        = 0
+                    SkippedCount       = 0
+                    RestartRecommended = $true
+                    RestartNotice      = 'DEMO MODE: This is a UI preview only. No Windows or Office licensing data was changed.'
+                    LogPath            = 'DEMO MODE - no log file was written'
+                    Results            = @(
+                        [pscustomobject]@{ Id = 'DEMO-1'; Category = 'OfficeCrackOhook'; Name = 'Office Crack Ohook'; Action = 'Quarantine hook DLL'; Target = 'C:\Program Files\Microsoft Office\root\vfs\System\sppc.dll'; Status = 'Applied'; Message = 'Demo quarantine completed.'; BackupPath = $null; QuarantinePath = 'DEMO MODE - quarantine path preview'; RestartRecommended = $true; RestartReason = 'Restart Office after removing hook DLL.' },
+                        [pscustomobject]@{ Id = 'DEMO-2'; Category = 'OfficeActivationReset'; Name = 'Office license cache'; Action = 'Reset Office activation cache'; Target = 'Current user Office licensing cache'; Status = 'Applied'; Message = 'Demo Office activation cache reset completed.'; BackupPath = 'DEMO MODE - registry backup preview'; QuarantinePath = 'DEMO MODE - token cache quarantine preview'; RestartRecommended = $true; RestartReason = 'Restart Office after resetting activation cache.' }
+                    )
+                }
+            }
+            else {
+                $applyResult = Invoke-CLCleanupPlan -Plan $plan -Force
+            }
             Set-CLProgress -Percent 100 -Message (Get-CLText 'CleanupCompleted')
 
             $lines = New-Object System.Collections.Generic.List[string]
-            $lines.Add('Cleanup Apply Result')
-            $lines.Add("Applied: $($applyResult.AppliedCount) | Failed: $($applyResult.FailedCount) | Skipped: $($applyResult.SkippedCount)")
-            $lines.Add($applyResult.RestartNotice)
-            $lines.Add("Log: $($applyResult.LogPath)")
-            $lines.Add("Backup: $($applyResult.BackupRoot)")
-            $lines.Add("Quarantine: $($applyResult.QuarantineRoot)")
+            $overallStatus = if ($applyResult.FailedCount -gt 0) { 'COMPLETED WITH ERRORS' } elseif ($applyResult.SkippedCount -gt 0) { 'COMPLETED WITH WARNINGS' } else { 'COMPLETED SUCCESSFULLY' }
+            $lines.Add('GO CRACK - CLEANUP RESULT')
+            $lines.Add('=' * 58)
+            $lines.Add("Status      : $overallStatus")
+            $lines.Add("Completed   : $($applyResult.GeneratedAt)")
+            $lines.Add("Applied     : $($applyResult.AppliedCount)")
+            $lines.Add("Failed      : $($applyResult.FailedCount)")
+            $lines.Add("Skipped     : $($applyResult.SkippedCount)")
+            $lines.Add("Restart     : $($applyResult.RestartNotice)")
             $lines.Add('')
+            $lines.Add('Storage')
+            $lines.Add('-------')
+            $lines.Add("Cleanup log : $($applyResult.LogPath)")
+            $lines.Add("Backup root : $($applyResult.BackupRoot)")
+            $lines.Add("Quarantine  : $($applyResult.QuarantineRoot)")
+            $lines.Add('')
+            $lines.Add('Actions')
+            $lines.Add('-------')
             foreach ($item in @($applyResult.Results)) {
-                $lines.Add("[$($item.Id)] $($item.Category) | $($item.Status)")
-                $lines.Add("Name   : $($item.Name)")
-                $lines.Add("Target : $($item.Target)")
-                $lines.Add("Message: $($item.Message)")
-                if ($item.BackupPath) { $lines.Add("Backup : $($item.BackupPath)") }
-                if ($item.QuarantinePath) { $lines.Add("Quarantine: $($item.QuarantinePath)") }
-                $lines.Add("Restart: $($item.RestartReason)")
+                $marker = switch ($item.Status) {
+                    'Applied' { '[OK]' }
+                    'Failed' { '[FAILED]' }
+                    'Skipped' { '[SKIPPED]' }
+                    default { "[$($item.Status)]" }
+                }
+                $lines.Add("$marker $($item.Id)  $($item.Category)  $($item.Name)")
+                $lines.Add("  Action : $($item.Action)")
+                $lines.Add("  Target : $($item.Target)")
+                $lines.Add("  Result : $($item.Message)")
+                if ($item.BackupPath) { $lines.Add("  Backup : $($item.BackupPath)") }
+                if ($item.QuarantinePath) { $lines.Add("  Quarantine: $($item.QuarantinePath)") }
+                if ($item.RestartRecommended) { $lines.Add("  Restart: $($item.RestartReason)") }
                 $lines.Add('')
             }
+            $lines.Add('Next steps')
+            $lines.Add('----------')
+            if ($applyResult.RestartRecommended) { $lines.Add('- Restart Windows, then run CHECK again to confirm Windows/Office are clean.') }
+            else { $lines.Add('- Run CHECK again to confirm no crack indicators remain.') }
+            if ($applyResult.FailedCount -gt 0) { $lines.Add('- Review failed actions above and run the app as Administrator if needed.') }
+            if ($applyResult.SkippedCount -gt 0) { $lines.Add('- Skipped actions are intentionally left for manual review, usually SPP store safety cases.') }
 
             $script:DetailBox.Text = ($lines -join "`r`n")
-            Add-CLLog "Cleanup completed. Log: $($applyResult.LogPath)"
-            $cleanupMessage = (Get-CLText 'CleanupCompletedMsg') -f $applyResult.AppliedCount, $applyResult.FailedCount, $applyResult.SkippedCount, $applyResult.RestartNotice
+            Add-CLLog "Cleanup completed. Applied=$($applyResult.AppliedCount), Failed=$($applyResult.FailedCount), Skipped=$($applyResult.SkippedCount), Log=$($applyResult.LogPath)"
+            $cleanupMessage = "Gỡ crack hoàn tất.`r`n`r`nTrạng thái: $overallStatus`r`nThành công: $($applyResult.AppliedCount)`r`nLỗi: $($applyResult.FailedCount)`r`nBỏ qua: $($applyResult.SkippedCount)`r`n`r`n$($applyResult.RestartNotice)"
             [System.Windows.MessageBox]::Show($cleanupMessage, (Get-CLText 'ApplyCleanup'), 'OK', 'Information') | Out-Null
         }
         catch {

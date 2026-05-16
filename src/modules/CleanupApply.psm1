@@ -67,6 +67,93 @@ function Move-CLToQuarantine {
     return $target
 }
 
+function Reset-CLWindowsActivationState {
+    param()
+
+    $messages = New-Object System.Collections.Generic.List[string]
+    $slmgr = Join-Path $env:SystemRoot 'System32\slmgr.vbs'
+
+    foreach ($argument in @('/upk', '/cpky', '/ckms')) {
+        try {
+            & cscript.exe //nologo $slmgr $argument | Out-Null
+            $messages.Add("Ran slmgr.vbs $argument")
+        }
+        catch {
+            $messages.Add("slmgr.vbs $argument failed: $($_.Exception.Message)")
+        }
+    }
+
+    try {
+        Stop-Service -Name sppsvc -Force -ErrorAction SilentlyContinue
+        Start-Service -Name sppsvc -ErrorAction SilentlyContinue
+        $messages.Add('Restarted Software Protection service')
+    }
+    catch {
+        $messages.Add("Software Protection service restart skipped: $($_.Exception.Message)")
+    }
+
+    if ($messages.Count -gt 0) { $messages -join '; ' } else { 'Windows activation reset completed.' }
+}
+
+function Remove-CLOfficeActivationCache {
+    param(
+        [string]$BackupRoot,
+        [string]$QuarantineRoot
+    )
+
+    $messages = New-Object System.Collections.Generic.List[string]
+    $backupPaths = New-Object System.Collections.Generic.List[string]
+    $quarantinePaths = New-Object System.Collections.Generic.List[string]
+
+    Stop-Process -Name WINWORD, EXCEL, POWERPNT, OUTLOOK, ONENOTE, MSACCESS, MSPUB, VISIO, WINPROJ -Force -ErrorAction SilentlyContinue
+
+    foreach ($registryPath in @(
+            'HKCU:\Software\Microsoft\Office\16.0\Common\Licensing',
+            'HKCU:\Software\Microsoft\Office\16.0\Common\Identity'
+        )) {
+        if (Test-Path -LiteralPath $registryPath) {
+            $backup = Backup-CLRegistryKey -RegistryPath $registryPath -BackupRoot $BackupRoot
+            if ($backup) { $backupPaths.Add($backup) }
+            Remove-Item -LiteralPath $registryPath -Recurse -Force -ErrorAction Stop
+            $messages.Add("Removed registry cache: $registryPath")
+        }
+    }
+
+    foreach ($path in @(
+            (Join-Path $env:LOCALAPPDATA 'Microsoft\Office\Licenses'),
+            (Join-Path $env:LOCALAPPDATA 'Microsoft\Office\16.0\Licensing')
+        )) {
+        if (Test-Path -LiteralPath $path) {
+            $quarantine = Move-CLToQuarantine -Path $path -QuarantineRoot $QuarantineRoot
+            $quarantinePaths.Add($quarantine)
+            $messages.Add("Quarantined Office license cache: $path")
+        }
+    }
+
+    try {
+        $officeCredentials = @(cmdkey.exe /list | Select-String -Pattern 'MicrosoftOffice|Office|ADAL|MSOID|OneAuth' -Context 1,0)
+        foreach ($match in $officeCredentials) {
+            $text = ($match.Context.PreContext + $match.Line) -join ' '
+            if ($text -match 'Target:\s*(.+?)(?:\s{2,}|$)') {
+                $target = $matches[1].Trim()
+                if ($target) {
+                    & cmdkey.exe /delete:$target | Out-Null
+                    $messages.Add("Removed Office credential: $target")
+                }
+            }
+        }
+    }
+    catch {
+        $messages.Add("Credential cleanup skipped: $($_.Exception.Message)")
+    }
+
+    [pscustomobject]@{
+        Message = if ($messages.Count -gt 0) { $messages -join '; ' } else { 'No Office activation cache was found.' }
+        BackupPath = if ($backupPaths.Count -gt 0) { $backupPaths -join '; ' } else { $null }
+        QuarantinePath = if ($quarantinePaths.Count -gt 0) { $quarantinePaths -join '; ' } else { $null }
+    }
+}
+
 function Invoke-CLCleanupAction {
     [CmdletBinding(SupportsShouldProcess)]
     param(
@@ -161,6 +248,20 @@ function Invoke-CLCleanupAction {
             }
             'SppStoreTsforge' {
                 return New-CLApplyResult -Action $Action -Status 'Skipped' -Message 'SPP store files were not changed automatically.'
+            }
+            'OfficeActivationReset' {
+                if ($PSCmdlet.ShouldProcess($Action.Target, 'Reset Office activation cache')) {
+                    $reset = Remove-CLOfficeActivationCache -BackupRoot $BackupRoot -QuarantineRoot $QuarantineRoot
+                    return New-CLApplyResult -Action $Action -Status 'Applied' -Message $reset.Message -BackupPath $reset.BackupPath -QuarantinePath $reset.QuarantinePath
+                }
+                return New-CLApplyResult -Action $Action -Status 'Skipped' -Message 'Office activation cache reset was not applied.'
+            }
+            'WindowsActivationReset' {
+                if ($PSCmdlet.ShouldProcess($Action.Target, 'Reset Windows activation state')) {
+                    $message = Reset-CLWindowsActivationState
+                    return New-CLApplyResult -Action $Action -Status 'Applied' -Message $message
+                }
+                return New-CLApplyResult -Action $Action -Status 'Skipped' -Message 'Windows activation reset was not applied.'
             }
             'Office' {
                 if ($Action.CommandPreview -match '/unpkey:([A-Z0-9]{5})') {

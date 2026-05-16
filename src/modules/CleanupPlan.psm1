@@ -68,6 +68,19 @@ function New-CLCleanupPlan {
         $index++
     }
 
+    $hasOfficeCrack = @($ScanResult.Indicators | Where-Object { $_.Type -in @('OfficeCrackOhook', 'OfficeProtectionRegistry') }).Count -gt 0
+    if ($hasOfficeCrack) {
+        $actions.Add((New-CLCleanupAction -Id "CLN-$index" -Category 'OfficeActivationReset' -Name 'Office license cache' -Action 'Reset Office activation cache' -Target 'Current user Office licensing cache' -Reason 'Office crack was detected; reset local Office activation tokens and registry cache so Office returns to unlicensed/sign-in-required state.' -CommandPreview 'Remove Office LicensingNext, Identity, local license token folders, and Office credentials' -Risk 'High' -RestartRecommended $true -RestartReason 'Close Office apps before cleanup; restart Office or Windows to refresh activation state.'))
+        $index++
+    }
+
+    $hasWindowsCrack = @($ScanResult.Indicators | Where-Object { $_.Type -in @('WindowsCrackHWIDFile', 'WindowsCrackHWIDFolder', 'SppStoreTsforge', 'ImageFileExecutionOptions') -or ($_.Name -match 'HWID|KMS38|TSforge|MAS') }).Count -gt 0
+    $hasWindowsKms = @($ScanResult.KmsInfo | Where-Object { $_.RegistryPath -match 'SoftwareProtectionPlatform' -and $_.IsConfigured }).Count -gt 0
+    if ($hasWindowsCrack -or $hasWindowsKms) {
+        $actions.Add((New-CLCleanupAction -Id "CLN-$index" -Category 'WindowsActivationReset' -Name 'Windows activation state' -Action 'Reset Windows activation state' -Target 'Windows Software Protection Platform' -Reason 'Windows crack or suspicious Windows activation configuration was detected; remove installed Windows product key and clear configured KMS host so Windows returns to unlicensed/not-activated state.' -CommandPreview 'slmgr.vbs /upk; slmgr.vbs /cpky; slmgr.vbs /ckms' -Risk 'High' -RestartRecommended $true -RestartReason 'Restart Windows after resetting activation state so Software Protection reloads cleanly.'))
+        $index++
+    }
+
     $summary = if ($actions.Count -gt 0) { "$($actions.Count) cleanup action(s) available for review. No changes were made." } else { 'No cleanup actions were suggested.' }
     $restartRecommended = @($actions.ToArray() | Where-Object { $_.RestartRecommended }).Count -gt 0
 
