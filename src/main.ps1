@@ -15,7 +15,7 @@ $rulesPath = Join-Path $PSScriptRoot 'config\rules.json'
 if ($VerboseLog) { $VerbosePreference = 'Continue' }
 
 function Import-CLModules {
-    foreach ($module in @('Compatibility', 'WindowsLicense', 'VNextLicense', 'OfficeLicense', 'KmsScanner', 'CrackIndicatorScanner', 'RiskScore', 'Report', 'CleanupPlan', 'CleanupApply')) {
+    foreach ($module in @('Compatibility', 'WindowsLicense', 'VNextLicense', 'OfficeLicense', 'KmsScanner', 'CrackIndicatorScanner', 'AdvancedActivationScanner', 'RiskScore', 'Report', 'CleanupPlan', 'CleanupApply')) {
         Import-Module (Join-Path $moduleRoot "$module.psm1") -Force -ErrorAction Stop
     }
 }
@@ -36,7 +36,9 @@ function Invoke-CLScan {
 
     Write-Verbose 'Scanning KMS configuration and common activation indicators.'
     $kmsInfo = @(Get-CLKmsInfo -SuspiciousKeywords @($Rules.suspiciousKmsKeywords))
-    $indicators = @(Get-CLCrackIndicators -IndicatorNames @($Rules.indicatorNames) -IndicatorPaths @($Rules.indicatorPaths))
+    $baseIndicators = @(Get-CLCrackIndicators -IndicatorNames @($Rules.indicatorNames) -IndicatorPaths @($Rules.indicatorPaths))
+    $advancedIndicators = @(Get-CLAdvancedActivationIndicators -Rules $Rules -WindowsLicenses $windowsLicenses -OfficeLicenses $officeLicenses -KmsInfo $kmsInfo -ExistingIndicators $baseIndicators)
+    $indicators = @($baseIndicators + $advancedIndicators)
 
     $risk = Get-CLRiskScore -WindowsLicenses $windowsLicenses -OfficeLicenses $officeLicenses -KmsInfo $kmsInfo -Indicators $indicators
 

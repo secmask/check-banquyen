@@ -48,13 +48,17 @@ function New-CLCleanupPlan {
             'RunKey' { "Remove-ItemProperty -LiteralPath '$($indicator.Location)' -Name '$($indicator.Name)'" }
             'ImageFileExecutionOptions' { "Remove the Debugger value from '$($indicator.Location)'" }
             'OfficeProtectionRegistry' { "Review and remove suspicious Office protection registry value '$($indicator.Name)'" }
+            'OfficeCrackOhook' { "Move-Item -LiteralPath '$($indicator.Location)' to quarantine" }
+            'WindowsCrackHWIDFile' { "Move-Item -LiteralPath '$($indicator.Location)' to quarantine" }
+            'WindowsCrackHWIDFolder' { "Move-Item -LiteralPath '$($indicator.Location)' to quarantine" }
+            'SppStoreTsforge' { 'Manual review required; do not delete SPP store files automatically' }
             'File' { "Move-Item -LiteralPath '$($indicator.Location)' to quarantine" }
             'Folder' { "Move-Item -LiteralPath '$($indicator.Location)' to quarantine" }
             default { 'Manual review required' }
         }
 
-        $needsRestart = $indicator.Type -in @('Service', 'ServicePath', 'ImageFileExecutionOptions', 'OfficeProtectionRegistry', 'File', 'Folder')
-        $restartReason = if ($needsRestart) { 'Restart is recommended after removing service hooks, IFEO hooks, protection registry values, or loaded files.' } else { 'No restart is usually required after removing this persistence entry.' }
+        $needsRestart = $indicator.Type -in @('Service', 'ServicePath', 'ImageFileExecutionOptions', 'OfficeProtectionRegistry', 'OfficeCrackOhook', 'WindowsCrackHWIDFile', 'WindowsCrackHWIDFolder', 'File', 'Folder')
+        $restartReason = if ($indicator.Type -eq 'SppStoreTsforge') { 'Do not remove SPP store files automatically; review entitlement and consider official Microsoft repair/reactivation steps.' } elseif ($needsRestart) { 'Restart is recommended after removing service hooks, IFEO hooks, protection registry values, or loaded files.' } else { 'No restart is usually required after removing this persistence entry.' }
         $actions.Add((New-CLCleanupAction -Id "CLN-$index" -Category $indicator.Type -Name $indicator.Name -Action 'Review suspicious activation trace' -Target $indicator.Location -Reason $indicator.Evidence -CommandPreview $command -Risk $indicator.Severity -RestartRecommended $needsRestart -RestartReason $restartReason))
         $index++
     }

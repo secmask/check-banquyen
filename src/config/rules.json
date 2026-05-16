@@ -47,5 +47,40 @@
     "%SystemRoot%\\SysWOW64\\SppExtComObjHook.dll",
     "%SystemRoot%\\System32\\SppExtComObjPatcher.exe",
     "%SystemRoot%\\SysWOW64\\SppExtComObjPatcher.exe"
+  ],
+  "officeHookFileNames": [
+    "sppc.dll",
+    "sppc32.dll",
+    "sppc64.dll"
+  ],
+  "knownOhookSha256": [
+    "09865ea5993215965e8f27a74b8a41d15fd0f60f5f404cb7a8b3c7757acdab02",
+    "393a1fa26deb3663854e41f2b687c188a9eacd87b23f17ea09422c4715cb5a9f"
+  ],
+  "officeSearchRoots": [
+    "%ProgramFiles%\\Microsoft Office\\root\\Office16",
+    "%ProgramFiles(x86)%\\Microsoft Office\\root\\Office16",
+    "%ProgramFiles%\\Microsoft Office\\Office16",
+    "%ProgramFiles(x86)%\\Microsoft Office\\Office16",
+    "%ProgramFiles%\\Microsoft Office\\Office15",
+    "%ProgramFiles(x86)%\\Microsoft Office\\Office15",
+    "%ProgramFiles%\\Microsoft Office\\Office14",
+    "%ProgramFiles(x86)%\\Microsoft Office\\Office14",
+    "%ProgramFiles%\\Microsoft Office\\Office12",
+    "%ProgramFiles(x86)%\\Microsoft Office\\Office12"
+  ],
+  "sppStorePaths": [
+    "%SystemRoot%\\System32\\spp\\store\\2.0\\data.dat",
+    "%SystemRoot%\\System32\\spp\\store\\2.0\\tokens.dat",
+    "%SystemRoot%\\System32\\spp\\store\\data.dat",
+    "%SystemRoot%\\System32\\spp\\store\\tokens.dat"
+  ],
+  "hwidArtifactPaths": [
+    "C:\\Files\\GenuineTicket.xml",
+    "%ProgramData%\\Microsoft Activation Scripts",
+    "%ProgramData%\\MAS",
+    "%SystemDrive%\\$OEM$",
+    "%SystemRoot%\\Setup\\Scripts\\MAS_AIO.cmd",
+    "%SystemRoot%\\Setup\\Scripts\\SetupComplete.cmd"
   ]
 }

@@ -138,6 +138,30 @@ function Invoke-CLCleanupAction {
                 }
                 return New-CLApplyResult -Action $Action -Status 'Applied' -Message 'Suspicious folder moved to quarantine.' -QuarantinePath $quarantine
             }
+            'OfficeCrackOhook' {
+                $quarantine = $null
+                if ($PSCmdlet.ShouldProcess($Action.Target, 'Move Office Crack Ohook DLL to quarantine')) {
+                    $quarantine = Move-CLToQuarantine -Path $Action.Target -QuarantineRoot $QuarantineRoot
+                }
+                return New-CLApplyResult -Action $Action -Status 'Applied' -Message 'Office Crack Ohook DLL moved to quarantine.' -QuarantinePath $quarantine
+            }
+            'WindowsCrackHWIDFile' {
+                $quarantine = $null
+                if ($PSCmdlet.ShouldProcess($Action.Target, 'Move Windows Crack HWID artifact to quarantine')) {
+                    $quarantine = Move-CLToQuarantine -Path $Action.Target -QuarantineRoot $QuarantineRoot
+                }
+                return New-CLApplyResult -Action $Action -Status 'Applied' -Message 'Windows Crack HWID artifact moved to quarantine.' -QuarantinePath $quarantine
+            }
+            'WindowsCrackHWIDFolder' {
+                $quarantine = $null
+                if ($PSCmdlet.ShouldProcess($Action.Target, 'Move Windows Crack HWID folder to quarantine')) {
+                    $quarantine = Move-CLToQuarantine -Path $Action.Target -QuarantineRoot $QuarantineRoot
+                }
+                return New-CLApplyResult -Action $Action -Status 'Applied' -Message 'Windows Crack HWID folder moved to quarantine.' -QuarantinePath $quarantine
+            }
+            'SppStoreTsforge' {
+                return New-CLApplyResult -Action $Action -Status 'Skipped' -Message 'SPP store files were not changed automatically.'
+            }
             'Office' {
                 if ($Action.CommandPreview -match '/unpkey:([A-Z0-9]{5})') {
                     $partialKey = $matches[1]

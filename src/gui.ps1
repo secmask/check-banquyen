@@ -7,7 +7,7 @@ $moduleRoot = Join-Path $PSScriptRoot 'modules'
 $rulesPath = Join-Path $PSScriptRoot 'config\rules.json'
 $reportRoot = Join-Path $env:ProgramData 'CheckLicense\reports'
 
-foreach ($module in @('Compatibility', 'WindowsLicense', 'VNextLicense', 'OfficeLicense', 'KmsScanner', 'CrackIndicatorScanner', 'RiskScore', 'Report', 'CleanupPlan', 'CleanupApply')) {
+foreach ($module in @('Compatibility', 'WindowsLicense', 'VNextLicense', 'OfficeLicense', 'KmsScanner', 'CrackIndicatorScanner', 'AdvancedActivationScanner', 'RiskScore', 'Report', 'CleanupPlan', 'CleanupApply')) {
     Import-Module (Join-Path $moduleRoot "$module.psm1") -Force -ErrorAction Stop
 }
 
@@ -155,7 +155,9 @@ function Invoke-CLGuiScan {
     $windowsLicenses = @(Get-CLWindowsLicense)
     $officeLicenses = @(Get-CLOfficeLicense)
     $kmsInfo = @(Get-CLKmsInfo -SuspiciousKeywords @($rules.suspiciousKmsKeywords))
-    $indicators = @(Get-CLCrackIndicators -IndicatorNames @($rules.indicatorNames) -IndicatorPaths @($rules.indicatorPaths))
+    $baseIndicators = @(Get-CLCrackIndicators -IndicatorNames @($rules.indicatorNames) -IndicatorPaths @($rules.indicatorPaths))
+    $advancedIndicators = @(Get-CLAdvancedActivationIndicators -Rules $rules -WindowsLicenses $windowsLicenses -OfficeLicenses $officeLicenses -KmsInfo $kmsInfo -ExistingIndicators $baseIndicators)
+    $indicators = @($baseIndicators + $advancedIndicators)
     $risk = Get-CLRiskScore -WindowsLicenses $windowsLicenses -OfficeLicenses $officeLicenses -KmsInfo $kmsInfo -Indicators $indicators
 
     $result = [pscustomobject]@{
@@ -502,6 +504,16 @@ function Set-CLDetailView {
     $script:DetailBox.Text = ($lines -join "`r`n")
 }
 
+function Get-CLDirectCrackConclusion {
+    param([object[]]$Indicators)
+
+    $direct = @($Indicators | Where-Object { $_.IsSuspicious -and $_.Type -in @('OfficeCrackOhook', 'SppStoreTsforge', 'WindowsCrackHWIDFile', 'WindowsCrackHWIDFolder') })
+    if (@($direct | Where-Object { $_.Type -eq 'OfficeCrackOhook' }).Count -gt 0) { return 'Office Crack Ohook' }
+    if (@($direct | Where-Object { $_.Type -eq 'SppStoreTsforge' }).Count -gt 0) { return 'Windows/Office Crack TSforge' }
+    if (@($direct | Where-Object { $_.Type -in @('WindowsCrackHWIDFile', 'WindowsCrackHWIDFolder') }).Count -gt 0) { return 'Windows Crack HWID' }
+    return $null
+}
+
 function Set-CLResultView {
     param([object]$Result)
 
@@ -512,9 +524,10 @@ function Set-CLResultView {
     $windowsLicensed = ($win -and $win[0].IsLicensed)
     $officeLicensed = ($off -and $off[0].IsLicensed)
     $hasCrackSignal = ($kmsSuspicious -gt 0 -or $indicatorCount -gt 0)
+    $directConclusion = Get-CLDirectCrackConclusion -Indicators @($Result.Indicators)
 
     $script:RiskLabelText.Text = Get-CLText 'Status'
-    $script:RiskText.Text = if ($hasCrackSignal) { Get-CLText 'UninstallSafe' } else { Get-CLText 'Passed' }
+    $script:RiskText.Text = if ($directConclusion) { $directConclusion } elseif ($hasCrackSignal) { Get-CLText 'UninstallSafe' } else { Get-CLText 'Passed' }
     $script:ScoreText.Text = if ($hasCrackSignal) { "$(Get-CLText 'CleanupAvailable') | $kmsSuspicious KMS | $indicatorCount indicator(s)" } else { Get-CLText 'NoCrackDetected' }
     $script:RiskText.Foreground = if ($hasCrackSignal) { '#D13438' } else { '#107C10' }
 
@@ -551,7 +564,7 @@ function Start-CLGuiScan {
         $script:scanJob = Start-Job -ArgumentList $moduleRoot, $rulesPath, $false -ScriptBlock {
             param($ModuleRoot, $RulesPath, $NoReport)
 
-            foreach ($module in @('Compatibility', 'WindowsLicense', 'VNextLicense', 'OfficeLicense', 'KmsScanner', 'CrackIndicatorScanner', 'RiskScore', 'Report', 'CleanupPlan', 'CleanupApply')) {
+            foreach ($module in @('Compatibility', 'WindowsLicense', 'VNextLicense', 'OfficeLicense', 'KmsScanner', 'CrackIndicatorScanner', 'AdvancedActivationScanner', 'RiskScore', 'Report', 'CleanupPlan', 'CleanupApply')) {
                 Import-Module (Join-Path $ModuleRoot "$module.psm1") -Force -ErrorAction Stop
             }
 
@@ -566,7 +579,9 @@ function Start-CLGuiScan {
             [pscustomobject]@{ Kind = 'Progress'; Percent = 62; Message = 'Checking KMS configuration...' }
             $kmsInfo = @(Get-CLKmsInfo -SuspiciousKeywords @($rules.suspiciousKmsKeywords))
             [pscustomobject]@{ Kind = 'Progress'; Percent = 78; Message = 'Checking activation indicators...' }
-            $indicators = @(Get-CLCrackIndicators -IndicatorNames @($rules.indicatorNames) -IndicatorPaths @($rules.indicatorPaths))
+            $baseIndicators = @(Get-CLCrackIndicators -IndicatorNames @($rules.indicatorNames) -IndicatorPaths @($rules.indicatorPaths))
+            $advancedIndicators = @(Get-CLAdvancedActivationIndicators -Rules $rules -WindowsLicenses $windowsLicenses -OfficeLicenses $officeLicenses -KmsInfo $kmsInfo -ExistingIndicators $baseIndicators)
+            $indicators = @($baseIndicators + $advancedIndicators)
             [pscustomobject]@{ Kind = 'Progress'; Percent = 90; Message = 'Calculating risk score...' }
             $risk = Get-CLRiskScore -WindowsLicenses $windowsLicenses -OfficeLicenses $officeLicenses -KmsInfo $kmsInfo -Indicators $indicators
 
