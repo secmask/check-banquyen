@@ -45,6 +45,14 @@
     "%SystemRoot%\\KMSAuto",
     "%SystemRoot%\\System32\\SppExtComObjHook.dll",
     "%SystemRoot%\\SysWOW64\\SppExtComObjHook.dll",
+    "%ProgramFiles%\\Microsoft Office\\root\\vfs\\System\\sppc.dll",
+    "%ProgramFiles(x86)%\\Microsoft Office\\root\\vfs\\System\\sppc.dll",
+    "%ProgramFiles%\\Microsoft Office\\root\\vfs\\SystemX86\\sppc.dll",
+    "%ProgramFiles(x86)%\\Microsoft Office\\root\\vfs\\SystemX86\\sppc.dll",
+    "%ProgramFiles%\\Microsoft Office\\root\\vfs\\System\\sppc64.dll",
+    "%ProgramFiles(x86)%\\Microsoft Office\\root\\vfs\\System\\sppc64.dll",
+    "%ProgramFiles%\\Microsoft Office\\root\\vfs\\SystemX86\\sppc32.dll",
+    "%ProgramFiles(x86)%\\Microsoft Office\\root\\vfs\\SystemX86\\sppc32.dll",
     "%SystemRoot%\\System32\\SppExtComObjPatcher.exe",
     "%SystemRoot%\\SysWOW64\\SppExtComObjPatcher.exe"
   ],
@@ -58,6 +66,10 @@
     "393a1fa26deb3663854e41f2b687c188a9eacd87b23f17ea09422c4715cb5a9f"
   ],
   "officeSearchRoots": [
+    "%ProgramFiles%\\Microsoft Office",
+    "%ProgramFiles(x86)%\\Microsoft Office",
+    "%ProgramFiles%\\Microsoft Office\\root",
+    "%ProgramFiles(x86)%\\Microsoft Office\\root",
     "%ProgramFiles%\\Microsoft Office\\root\\Office16",
     "%ProgramFiles(x86)%\\Microsoft Office\\root\\Office16",
     "%ProgramFiles%\\Microsoft Office\\Office16",

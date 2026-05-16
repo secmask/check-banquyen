@@ -64,16 +64,19 @@ function Get-CLOfficeHookIndicators {
         $root = Expand-CLAdvancedPath -Path $rootRule
         if ([string]::IsNullOrWhiteSpace($root) -or -not (Test-Path -LiteralPath $root -PathType Container)) { continue }
 
-        foreach ($fileName in @($OfficeHookFileNames)) {
-            $candidate = Join-Path $root $fileName
-            if (-not (Test-Path -LiteralPath $candidate -PathType Leaf)) { continue }
+        $candidates = foreach ($fileName in @($OfficeHookFileNames)) {
+            Get-ChildItem -LiteralPath $root -Filter $fileName -File -Recurse -ErrorAction SilentlyContinue
+        }
+
+        foreach ($candidateItem in @($candidates)) {
+            $candidate = $candidateItem.FullName
             if (-not $seen.Add($candidate.ToLowerInvariant())) { continue }
 
             $hash = Get-CLFileSha256 -Path $candidate
             $signature = Get-CLSignatureSummary -Path $candidate
             $hashMatched = $hash -and ($knownHashes -contains $hash)
             $severity = if ($hashMatched -or -not $signature.IsMicrosoft) { 'High' } else { 'Medium' }
-            $evidence = "Office loads local $fileName; SHA256=$hash; Signature=$($signature.Status); Subject=$($signature.Subject)"
+            $evidence = "Office loads local $($candidateItem.Name); SHA256=$hash; Signature=$($signature.Status); Subject=$($signature.Subject)"
             if ($hashMatched) { $evidence = "Known Ohook hash matched. $evidence" }
             elseif (-not $signature.IsMicrosoft) { $evidence = "Non-Microsoft Office sppc hook DLL. $evidence" }
 
