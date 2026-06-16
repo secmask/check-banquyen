@@ -5,7 +5,7 @@ param(
     [switch]$KeepFiles,
     [switch]$VerboseLog,
     [switch]$CreateShortcut,
-    [string]$ReleaseUrl = 'https://github.com/mson-ssh/check-banquyen/archive/refs/heads/main.zip'
+    [string]$ReleaseUrl = 'https://github.com/secmask/check-banquyen/archive/refs/heads/main.zip'
 )
 
 $ErrorActionPreference = 'Stop'
