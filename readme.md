@@ -6,8 +6,6 @@
 
 Mở PowerShell và chạy một lệnh duy nhất:
 
-![QuickStart](asset/quickstart.png)
-
 ```powershell
 irm https://raw.githubusercontent.com/secmask/check-banquyen/main/install.ps1 | iex
 ```
