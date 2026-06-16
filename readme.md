@@ -9,7 +9,7 @@ Mở PowerShell và chạy một lệnh duy nhất:
 ![QuickStart](asset/quickstart.png)
 
 ```powershell
-irm https://raw.githubusercontent.com/mson-ssh/check-banquyen/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/secmask/check-banquyen/main/install.ps1 | iex
 ```
 
 Lệnh trên sẽ tải mã nguồn mới nhất, cài tạm vào `%TEMP%\check-license` và mở giao diện WPF. Cửa sổ PowerShell gọi ban đầu sẽ được ẩn sau khi giao diện khởi động.
